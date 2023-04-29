@@ -1,0 +1,46 @@
+[project]
+name = "nycmesh-ospf-explorer"
+version = "0.1.0"
+authors = [{ name = "Andrew Dickinson", email = "andrew@nycmesh.net" }]
+description = "Interactive web app for visualizing NYC Mesh OSPF data"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "flask",
+    "python-dotenv",
+    "networkx",
+    "requests",
+    "flask-cors"
+]
+
+[project.urls]
+repository = "https://github.com/nycmeshnet/nycmesh-ospf-explorer"
+
+[project.optional-dependencies]
+test = [
+    "pytest >= 6",
+    "coverage",
+    "freezegun",
+]
+dev = [
+    "build",
+    "twine"
+]
+
+[build-system]
+requires = ['setuptools>=42']
+build-backend = 'setuptools.build_meta'
+
+[tool.setuptools]
+py-modules = []
+
+[project.scripts]
+nycmesh-ospf-explorer = "nycmesh_ospf_explorer:main.main"
+
+[options.packages.find]
+where = "backend/src"
