@@ -76,6 +76,7 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
     outputElements.push({
       data: { id: node.id, label: node.nn ?? node.id },
       classes: classes,
+      selected: node.id === selectedNode,
     });
     if (node.missing_edges > 0) {
       outputElements.push({
