@@ -131,6 +131,7 @@ function GraphView(props) {
       <Col className={"col-xxl-3"}>
         <SelectedNodeDetail
           nodeDetail={getNodeDetails(graphData, selectedNode)}
+          updateSelectedRouter={onNodeSelected}
         />
         <GraphViewSettings settings={settings} onUpdate={updateSetting} />
       </Col>

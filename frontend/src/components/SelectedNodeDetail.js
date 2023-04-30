@@ -44,7 +44,7 @@ function generateNetList(networks) {
 }
 
 function SelectedNodeDetail(props) {
-  const { nodeDetail } = props;
+  const { nodeDetail, updateSelectedRouter } = props;
 
   const nn = nodeDetail?.nn ?? null;
   const routerId = nodeDetail?.id ?? null;
@@ -94,7 +94,13 @@ function SelectedNodeDetail(props) {
                   {routers.map((router, i) => (
                     <ListGroupItem key={i}>
                       <b>
-                        <CardLink href={"/explorer?router=" + router.id}>
+                        <CardLink
+                          href={"/explorer?router=" + router.id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            updateSelectedRouter(router.id);
+                          }}
+                        >
                           {router.id}
                         </CardLink>
                       </b>{" "}
