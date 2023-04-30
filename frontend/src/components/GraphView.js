@@ -89,7 +89,7 @@ function GraphView(props) {
             settings,
             selectedNode
           )}
-          style={{ width: "100%", height: "40rem" }}
+          style={{ width: "100%", height: "35rem" }}
           stylesheet={CytoscapeStyles}
           layout={layoutProps}
           cy={(cy) => {

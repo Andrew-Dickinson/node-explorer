@@ -13,7 +13,7 @@ function JSONDataAccordion(data) {
   return (
     <Row className={"mt-3"}>
       <Col>
-        <UncontrolledAccordion>
+        <UncontrolledAccordion defaultOpen={"0"}>
           <AccordionItem>
             <AccordionHeader targetId="1">Raw JSON Data</AccordionHeader>
             <AccordionBody accordionId="1">

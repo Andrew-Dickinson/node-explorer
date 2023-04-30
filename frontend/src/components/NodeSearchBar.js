@@ -51,7 +51,10 @@ function NodeSearchBar(props) {
       <Col className={"col-xxl-9 col-lg-8"}>
         <InputGroup>
           <InputGroupText>
-            IP Address (OSPF ID) or Network Number
+            <span className={"d-sm-none d-inline"}>IP Addr or NN</span>
+            <span className={"d-none d-sm-inline"}>
+              IP Address or Network Number
+            </span>
           </InputGroupText>
           <Input
             type="text"
@@ -78,16 +81,14 @@ function NodeSearchBar(props) {
                 // type="grow"
                 role="status"
                 style={{ width: "0.8rem", height: "0.8rem" }}
-              >
-                <span className="visually-hidden">Loading...</span>
-              </Spinner>
+              />
             ) : (
               <></>
             )}
           </Button>
         </InputGroup>
       </Col>
-      <Col>
+      <Col className={"d-none d-lg-block"}>
         <Card>
           <CardBody>
             <CardText>
