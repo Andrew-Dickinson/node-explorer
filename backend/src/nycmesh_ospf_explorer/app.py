@@ -4,7 +4,7 @@ from flask_cors import CORS
 from nycmesh_ospf_explorer.graph import OSPFGraph
 from nycmesh_ospf_explorer.utils import compute_ip_from_nn, compute_nn_from_ip
 
-app = Flask(__name__, static_folder="../../../frontend/build/", static_url_path="/")
+app = Flask(__name__)
 CORS(app)
 
 graph = OSPFGraph()

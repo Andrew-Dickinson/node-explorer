@@ -37,10 +37,8 @@ requires = ['setuptools>=42']
 build-backend = 'setuptools.build_meta'
 
 [tool.setuptools]
-py-modules = []
+package-dir = {"" = "backend/src"}
+packages = ["nycmesh_ospf_explorer"]
 
 [project.scripts]
 nycmesh-ospf-explorer = "nycmesh_ospf_explorer:main.main"
-
-[options.packages.find]
-where = "backend/src"
