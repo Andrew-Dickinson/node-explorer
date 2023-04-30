@@ -3,7 +3,7 @@ import cytoscape from "cytoscape";
 import CytoscapeComponent from "react-cytoscapejs";
 import CytoscapeStyles from "../styles/CytoscapeStyles";
 import euler from "cytoscape-euler";
-import { Col, Row } from "reactstrap";
+import { Alert, Col, Row } from "reactstrap";
 import GraphViewSettings from "./GraphViewSettings";
 import SelectedNodeDetail from "./SelectedNodeDetail";
 import JSONDataAccordion from "./JSONDataAccordion";
@@ -21,6 +21,7 @@ function GraphView(props) {
     updateSearchDistance,
     selectedNode,
     onNodeSelected,
+    displayWarning,
   } = props;
 
   const [settings, setSettings] = useState({
@@ -95,7 +96,7 @@ function GraphView(props) {
     <Row className={"gy-3"}>
       <Col className={"col-xxl-9 col-lg-8 col-xs-12"}>
         <CytoscapeComponent
-          className={"rounded graph-view"}
+          className={"rounded graph-view mb-3"}
           elements={convertToCytoScapeElements(
             graphData,
             settings,
@@ -109,6 +110,23 @@ function GraphView(props) {
           }}
         />
         <JSONDataAccordion data={graphData} />
+        {displayWarning ? (
+          <Row>
+            <Col>
+              <Alert color={"info"}>
+                <h4>NB: OSPF data may be imperfect</h4>
+                <p>
+                  This tool pulls from the output of{" "}
+                  <code>birdc show ospf state</code> and may not be 100%
+                  accurate. It seems to be pretty good from experimentation but
+                  for critical decision making please double check the router
+                  configuration. Report any inconsistencies you notice so we can
+                  fix them!
+                </p>
+              </Alert>
+            </Col>
+          </Row>
+        ) : null}
       </Col>
       <Col className={"col-xxl-3"}>
         <SelectedNodeDetail

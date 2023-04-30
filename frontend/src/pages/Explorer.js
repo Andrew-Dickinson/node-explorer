@@ -78,6 +78,7 @@ function Explorer() {
         searchDistance={searchDistance}
         updateSearchDistance={setSearchDistance}
         selectedNode={urlState.router}
+        displayWarning={true}
         onNodeSelected={(newRouterId) => {
           setUrlState((oldState) => {
             return { ...oldState, router: newRouterId };

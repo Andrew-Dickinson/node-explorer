@@ -11,7 +11,7 @@ import React from "react";
 
 function JSONDataAccordion(data) {
   return (
-    <Row className={"mt-3"}>
+    <Row className={"mb-3"}>
       <Col>
         <UncontrolledAccordion defaultOpen={"0"}>
           <AccordionItem>
