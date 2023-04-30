@@ -105,27 +105,19 @@ function SelectedNodeDetail(props) {
               </AccordionBody>
             </AccordionItem>
             <AccordionItem>
-              <AccordionHeader targetId="1">
-                Advertised Networks
-              </AccordionHeader>
-              <AccordionBody accordionId="1">
-                {generateNetList(networks)}
-              </AccordionBody>
-            </AccordionItem>
-            <AccordionItem>
               <AccordionHeader targetId="2">
-                Advertised External Networks
+                Advertised Stubnets
               </AccordionHeader>
               <AccordionBody accordionId="2">
-                {generateNetList(external)}
+                {generateNetList(stubnets)}
               </AccordionBody>
             </AccordionItem>
             <AccordionItem>
               <AccordionHeader targetId="3">
-                Advertised Stubnets
+                Advertised External Networks
               </AccordionHeader>
               <AccordionBody accordionId="3">
-                {generateNetList(stubnets)}
+                {generateNetList(external)}
               </AccordionBody>
             </AccordionItem>
           </UncontrolledAccordion>
