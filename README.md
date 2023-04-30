@@ -56,7 +56,27 @@ flask run &
 cd frontend && npm start &
 ```
 
-The frontend should be accessible at `http://127.0.0.1:3000`, and the backend at `http://127.0.0.1:8000`
+The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:3000), and the backend at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+## Production deployment
+
+To deploy on a production server, start by following the dev instructions, but on the remote server:
+
+Setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
+```sh
+cd /my/deployment/directory/
+git clone https://github.com/nycmeshnet/nycmesh-ospf-explorer
+cd nycmesh-ospf-explorer
+python3 -m venv .venv
+source .venv/bin/activate
+cp .env_example .env
+pip install -e .
+cd frontend && npm install
+```
+
+Next set up a WSGI
+
+
 
 ## License
 
