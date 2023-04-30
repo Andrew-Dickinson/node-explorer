@@ -24,15 +24,9 @@ def validate_nn(nn: str):
 
 @app.route("/api/neighbors/<router_id>", methods=["GET"])
 def get_neighbors(router_id):
-    # network_num = request.args.get("network_num")
     neighbor_depth = int(request.args.get("searchDistance", 1))
 
-    # try:
-    #     nn_int = validate_nn(network_num)
-    # except ValueError as e:
-    #     return str(e), 400
-
-    # router_ip = compute_ip_from_nn(nn_int)
+    graph.update_if_needed()
     if not graph.contains_router(router_id):
         return str(f"Couldn't find router with ID: {router_id}"), 404
 
