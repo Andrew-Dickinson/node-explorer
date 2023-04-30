@@ -4,7 +4,7 @@ from flask_cors import CORS
 from nycmesh_ospf_explorer.graph import OSPFGraph
 from nycmesh_ospf_explorer.utils import compute_ip_from_nn, compute_nn_from_ip
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../../../frontend/build/", static_url_path="/")
 CORS(app)
 
 graph = OSPFGraph()
@@ -20,6 +20,11 @@ def validate_nn(nn: str):
         raise ValueError(f"Invalid network number: {nn}")
 
     return network_num
+
+
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
 
 
 @app.route("/api/neighbors/<router_id>", methods=["GET"])
