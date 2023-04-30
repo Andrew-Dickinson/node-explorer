@@ -4,25 +4,12 @@
 Utilizes Andrew's [OSPF JSON API](http://api.andrew.mesh/api/v1/ospf/linkdb) to present an interactive
 visualization of the mesh OSPF data. Can be used to debug or explore OSPF current state information.
 
-## Usage
+![A screenshot of the data explorer tool in use](/screenshots/img1.png?raw=true)
 
-Check it out at: [http://ospf-explorer.andrew.mesh](http://ospf-explorer.andrew.mesh)
+## Get Started
 
-## Self Deployment
-
-To deploy a copy of this package yourself
-
-Pre-requisites: `python3` available via the shell
-
-First, install the CLI via pip:
-```shell
-pip install nycmesh-ospf-explorer
-```
-
-then invoke the tool with the CLI command:
-```shell
-
-```
+If you just want to use this tool and don't need to host your own copy or do development work,
+just connect to the mesh and then check it out at: [http://ospf-explorer.andrew.mesh](http://ospf-explorer.andrew.mesh)
 
 ## Built with
 - [NetworkX](https://networkx.org/)
@@ -32,23 +19,19 @@ then invoke the tool with the CLI command:
 - [ReactStrap](https://reactstrap.github.io/)
 - [React](https://react.dev/)
 
+## Setup 
 
-## Dev Setup
+Pre-requisites: `python3` and `npm` available via the shell
 
-Pre-requisites: `python3` available via the shell
-
-Setup by cloning, creating a virtual env, and installing the application
+Setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
 ```sh
 git clone https://github.com/nycmeshnet/nycmesh-ospf-explorer
 cd nycmesh-ospf-explorer
 python3 -m venv .venv
 source .venv/bin/activate
+cp .env_example .env
 pip install -e .
-```
-
-then start the dev servers with the following commands:
-```sh
-
+cd frontend && npm install
 ```
 
 ## Running the unit tests
@@ -65,17 +48,15 @@ cd backend/
 pytest test/
 ```
 
-## Building to PyPi
+## Running the dev servers for local development
 
-Follow the instructions above to clone a local copy of this application, activate
-the virtual environment, and run the tests.
+Start the dev servers with the following commands (multiple shell sessions recommended):
+```sh
+flask run &
+cd frontend && npm start &
+```
 
-Then, build & upload the application with
-```
-rm -rf dist/*
-python -m build .
-twine upload dist/*
-```
+The frontend should be accessible at `http://127.0.0.1:3000`, and the backend at `http://127.0.0.1:8000`
 
 ## License
 
