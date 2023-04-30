@@ -22,17 +22,7 @@ def validate_nn(nn: str):
     return network_num
 
 
-@app.route("/")
-def index():
-    return app.send_static_file("index.html")
-
-
-@app.route("/explorer")
-def explorer():
-    return app.send_static_file("index.html")
-
-
-@app.route("/api/neighbors/<router_id>", methods=["GET"])
+@app.route("/neighbors/<router_id>", methods=["GET"])
 def get_neighbors(router_id):
     neighbor_depth = int(request.args.get("searchDistance", 1))
 
