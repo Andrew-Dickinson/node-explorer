@@ -64,6 +64,18 @@ function GraphView(props) {
         }
         onNodeSelected(nodeId);
       });
+
+      cyRef.on("mouseover", "node", (event) => {
+        if (event.cy.container()) {
+          event.cy.container().style.cursor = "pointer";
+        }
+      });
+
+      cyRef.on("mouseout", "node", (event) => {
+        if (event.cy.container()) {
+          event.cy.container().style.cursor = "default";
+        }
+      });
     }
   }, [cyRef]);
 
