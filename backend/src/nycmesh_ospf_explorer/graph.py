@@ -35,7 +35,25 @@ class OSPFGraph:
                 for link in router.get("links", {}).get("external", [])
             )
 
+            network_connected_routers = []
+            for network_link_info in router.get("links", {}).get("network", []):
+                network_cidr = network_link_info["id"]
+                cost = network_link_info["metric"]
+                for other_router_id in self.networks[network_cidr]["routers"]:
+                    if other_router_id != router_id:
+                        network_connected_routers.append(
+                            {"id": other_router_id, "metric": cost}
+                        )
+                        self._graph.add_edge(router_id, other_router_id, weight=cost)
+
             networks = router.get("links").copy()
+            if "network" in networks:
+                del networks["network"]
+
+            if network_connected_routers:
+                networks["router"] = networks.get("router", [])
+                networks["router"].extend(network_connected_routers)
+
             self._graph.add_node(router_id, exit=is_exit, networks=networks)
 
         # Get only the largest connected component

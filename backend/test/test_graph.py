@@ -44,7 +44,7 @@ TEST_FOUR_NODE_GRAPH = {
     "updated": math.floor(time.time()),
 }
 
-TEST_TWO_NODE_GRAPH_WITH_METADATA = {
+TEST_THREE_NODE_GRAPH_WITH_METADATA = {
     "areas": {
         "0.0.0.0": {
             "routers": {
@@ -64,8 +64,16 @@ TEST_TWO_NODE_GRAPH_WITH_METADATA = {
                     }
                 },
                 "10.69.0.2": {"links": {"router": [{"id": "10.69.0.1", "metric": 10}]}},
+                "10.69.0.3": {
+                    "links": {"network": [{"id": "10.70.76.0/24", "metric": 10}]}
+                },
             },
-            "networks": {},
+            "networks": {
+                "10.70.76.0/24": {
+                    "dr": "10.69.0.1",
+                    "routers": ["10.69.0.1", "10.69.0.3"],
+                }
+            },
         }
     },
     "updated": math.floor(time.time()),
@@ -108,19 +116,24 @@ def test_initialization():
 def test_metadata():
     graph = OSPFGraph(load_data=False)
 
-    graph.update_link_data(TEST_TWO_NODE_GRAPH_WITH_METADATA)
+    graph.update_link_data(TEST_THREE_NODE_GRAPH_WITH_METADATA)
 
-    assert len(graph._graph.edges) == 2
-    assert len(graph._graph.nodes) == 2
+    assert len(graph._graph.edges) == 4
+    assert len(graph._graph.nodes) == 3
 
-    assert graph._graph.out_degree("10.69.0.1") == 1
+    assert graph._graph.out_degree("10.69.0.1") == 2
     assert graph._graph.out_degree("10.69.0.2") == 1
+    assert graph._graph.out_degree("10.69.0.3") == 1
 
     assert list(graph._graph.out_edges("10.69.0.1"))[0] == ("10.69.0.1", "10.69.0.2")
+    assert list(graph._graph.out_edges("10.69.0.1"))[1] == ("10.69.0.1", "10.69.0.3")
     assert list(graph._graph.out_edges("10.69.0.2"))[0] == ("10.69.0.2", "10.69.0.1")
+    assert list(graph._graph.out_edges("10.69.0.3"))[0] == ("10.69.0.3", "10.69.0.1")
 
     assert graph._graph.get_edge_data("10.69.0.1", "10.69.0.2")[0]["weight"] == 10
+    assert graph._graph.get_edge_data("10.69.0.1", "10.69.0.3")[0]["weight"] == 10
     assert graph._graph.get_edge_data("10.69.0.2", "10.69.0.1")[0]["weight"] == 10
+    assert graph._graph.get_edge_data("10.69.0.3", "10.69.0.1")[0]["weight"] == 10
 
     assert graph._graph.nodes["10.69.0.1"]["networks"] == {
         "stubnet": [{"id": "10.69.4.98/32", "metric": 0}],
@@ -132,12 +145,16 @@ def test_metadata():
                 "via": "10.70.89.131",
             },
         ],
-        "router": [{"id": "10.69.0.2", "metric": 10}],
-        "network": [{"id": "10.70.76.0/24", "metric": 10}],
+        "router": [
+            {"id": "10.69.0.2", "metric": 10},
+            {"id": "10.69.0.3", "metric": 10},
+        ],
     }
     assert graph._graph.nodes["10.69.0.2"]["networks"] == {
         "router": [{"id": "10.69.0.1", "metric": 10}]
     }
+    assert "network" not in graph._graph.nodes["10.69.0.1"]["networks"]
+    assert "network" not in graph._graph.nodes["10.69.0.2"]["networks"]
 
     assert (
         graph.get_networks_for_node("10.69.0.1")
