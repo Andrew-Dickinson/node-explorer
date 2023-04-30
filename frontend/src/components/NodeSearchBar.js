@@ -91,7 +91,7 @@ function NodeSearchBar(props) {
         <Card>
           <CardBody>
             <CardText>
-              OSPF DB Updated{" "}
+              Last Updated{" "}
               <i>
                 {updatedTime ? moment.unix(updatedTime).fromNow() : "Never"}
                 {"  "}
