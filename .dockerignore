@@ -1,0 +1,14 @@
+**/.git
+
+**/.env
+.venv/
+.idea/
+build/
+*.egg-info/
+**/.pytest_cache
+
+dist/
+**/node_modules
+**/build
+
+screenshots/

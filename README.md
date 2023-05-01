@@ -9,7 +9,9 @@ visualization of the mesh OSPF data. Can be used to debug or explore OSPF curren
 ## Get Started
 
 If you just want to use this tool and don't need to host your own copy or do development work,
-just connect to the mesh and then check it out at: [http://ospf-explorer.andrew.mesh](http://ospf-explorer.andrew.mesh)
+just connect to the mesh and then check it out at: 
+
+[http://ospf-explorer.andrew.mesh](http://ospf-explorer.andrew.mesh)
 
 ## Built with
 - [NetworkX](https://networkx.org/)
@@ -21,11 +23,16 @@ just connect to the mesh and then check it out at: [http://ospf-explorer.andrew.
 
 ## Setup 
 
-Pre-requisites: `python3` and `npm` available via the shell
-
-Setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
+Pre-requisites: `python3` (>3.8) and `npm` (node 16) available via the shell. Check with:
 ```sh
-git clone https://github.com/nycmeshnet/nycmesh-ospf-explorer
+python3 --version
+node --version
+```
+
+
+Then setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
+```sh
+git clone https://github.com/nycmeshnet/ospf-explorer
 cd nycmesh-ospf-explorer
 python3 -m venv .venv
 source .venv/bin/activate
@@ -36,7 +43,7 @@ cd frontend && npm install
 
 ## Running the unit tests
 
-Follow the instructions under "Dev Setup" above, to clone a local copy of this application and activate
+Follow the instructions under "Setup" above, to clone a local copy of this application and activate
 the virtual environment. Then install the test dependencies with:
 ```sh
 pip install -e ".[test,dev]"
@@ -62,19 +69,23 @@ The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:30
 
 To deploy on a production server, start by following the dev instructions, but on the remote server:
 
-Setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
+Setup by cloning, creating a virtual env, creating the `.env` file, installing the dependencies, and creating 
+a production build:
 ```sh
-cd /my/deployment/directory/
-git clone https://github.com/nycmeshnet/nycmesh-ospf-explorer
-cd nycmesh-ospf-explorer
+cd /var/www/
+git clone https://github.com/nycmeshnet/ospf-explorer
+cd ospf-explorer
 python3 -m venv .venv
 source .venv/bin/activate
 cp .env_example .env
 pip install -e .
-cd frontend && npm install
+cd frontend && npm install && npm run build
 ```
 
 Next set up a WSGI
+```sh
+
+```
 
 
 
