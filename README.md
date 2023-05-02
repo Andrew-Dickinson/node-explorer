@@ -64,7 +64,7 @@ cd backend/ && flask run &
 cd frontend/ && npm start &
 ```
 
-The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:3000), and the backend at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:3000), and the backend at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ## Deployment via Docker
 
