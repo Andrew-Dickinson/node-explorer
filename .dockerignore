@@ -1,7 +1,7 @@
 **/.git
 
 **/.env
-.venv/
+**/.venv/
 .idea/
 build/
 *.egg-info/
