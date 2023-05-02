@@ -7,7 +7,7 @@ import requests
 
 from dotenv import load_dotenv
 
-from nycmesh_ospf_explorer.utils import compute_nn_string_from_ip
+from nycmesh_ospf_explorer.utils import compute_nn_string_from_ip, compute_nn_from_ip
 
 load_dotenv()
 
@@ -98,6 +98,7 @@ class OSPFGraph:
             output_node = {
                 "id": node_id,
                 "nn": None,
+                "nn_int": None,
                 "networks": node["networks"],
                 "exit": node["exit"],
                 "exit_path": self.get_exit_path_for_node(node_id),
@@ -110,6 +111,7 @@ class OSPFGraph:
 
             try:
                 output_node["nn"] = compute_nn_string_from_ip(node_id)
+                output_node["nn_int"] = compute_nn_from_ip(node_id)
             except ValueError:
                 pass
 
