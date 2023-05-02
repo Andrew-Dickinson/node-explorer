@@ -81,6 +81,8 @@ This should create a docker image called `node-explorer`, which can be run with:
 docker run -d -p 80:80  node-explorer
 ```
 
+You can confirm the docker container was build succesfully by opening [http://127.0.0.1:80](http://127.0.0.1:80) in your browser.
+
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
