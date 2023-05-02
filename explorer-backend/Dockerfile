@@ -13,6 +13,7 @@ RUN pip3 install setuptools wheel && \
     pip3 install --no-cache-dir .
 
 COPY . .
+RUN pip3 install .
 
 COPY --from=frontend /app/build static/
 
