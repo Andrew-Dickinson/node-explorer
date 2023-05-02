@@ -1,4 +1,6 @@
 #!/bin/bash
 
-docker build --tag node-explorer-frontend frontend/
-docker build --tag node-explorer backend/
+set -xe
+
+docker build --tag node-explorer-frontend explorer-frontend/
+docker build --tag node-explorer explorer-backend/
