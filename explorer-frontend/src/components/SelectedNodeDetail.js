@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardLink,
   CardSubtitle,
+  CardText,
   CardTitle,
   Col,
   Form,
@@ -28,6 +29,7 @@ function ip2int(ip) {
     }, 0) >>> 0
   );
 }
+
 function generateNetList(networks) {
   if (!networks.length) return "None";
   return (
@@ -47,10 +49,12 @@ function SelectedNodeDetail(props) {
   const { nodeDetail, updateSelectedRouter } = props;
 
   const nn = nodeDetail?.nn ?? null;
+  const nn_int = nodeDetail?.nn_int ?? null;
+  const is_exit = nodeDetail?.exit ?? null;
+  const exit_path = nodeDetail?.exit_path ?? [];
   const routerId = nodeDetail?.id ?? null;
 
   const routers = nodeDetail?.networks?.router ?? [];
-  const networks = nodeDetail?.networks?.network ?? [];
   const external = nodeDetail?.networks?.external ?? [];
   const stubnets = nodeDetail?.networks?.stubnet ?? [];
 
@@ -82,6 +86,38 @@ function SelectedNodeDetail(props) {
               <h6>OSPF Router ID: {routerId}</h6>
             </CardSubtitle>
           </CardHeader>
+          <CardBody>
+            <CardText>
+              <b>Map Link: </b>
+              {nn_int ? (
+                <a href={"https://www.nycmesh.net/map/nodes/" + nn_int}>
+                  NN{nn_int}
+                </a>
+              ) : (
+                "N/A"
+              )}
+              <br />
+              <b>Is Exit: </b>
+              {is_exit ? "Yes" : "No"}
+              <br />
+              <b>Exit Path: </b>
+              <ul>
+                {exit_path.map((router_id) => (
+                  <li key={router_id}>
+                    <a
+                      href={"/explorer?router=" + router_id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        updateSelectedRouter(router_id);
+                      }}
+                    >
+                      {router_id}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </CardText>
+          </CardBody>
           <UncontrolledAccordion
             defaultOpen={"0"}
             flush
