@@ -34,12 +34,12 @@ Then setup by cloning, creating a virtual env, creating the `.env` file, and ins
 ```sh
 git clone https://github.com/nycmeshnet/node-explorer
 cd node-explorer
-cd backend/
+cd explorer-backend/
 python3 -m venv .venv
 source .venv/bin/activate
 cp .env_example .env
 pip install -e .
-cd ../frontend/ && npm install
+cd ../explorer-frontend/ && npm install
 ```
 
 ## Running the unit tests
@@ -47,7 +47,7 @@ cd ../frontend/ && npm install
 Follow the instructions under "Setup" above, to clone a local copy of this application and activate
 the virtual environment. Then install the test dependencies with:
 ```sh
-cd backend/
+cd explorer-backend/
 pip install -e ".[test,dev]"
 ```
 
@@ -60,8 +60,8 @@ pytest test/
 
 Start the dev servers with the following commands (multiple shell sessions recommended):
 ```sh
-cd backend/ && flask run &
-cd frontend/ && npm start &
+cd explorer-backend/ && flask run &
+cd explorer-frontend/ && npm start &
 ```
 
 The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:3000), and the backend at [http://127.0.0.1:5000](http://127.0.0.1:5000)
