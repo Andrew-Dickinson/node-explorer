@@ -9,3 +9,5 @@ COPY . .
 RUN pip3 install .
 
 COPY --from=frontend /app/build static/
+
+ENV FLASK_ENV=production

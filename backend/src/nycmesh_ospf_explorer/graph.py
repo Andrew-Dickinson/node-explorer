@@ -113,7 +113,12 @@ class OSPFGraph:
 
     def update_link_data(self, json_link_data: dict = None):
         if json_link_data is None:
-            json_link_data = requests.get(API_URL).json()
+            try:
+                json_link_data = requests.get(API_URL).json()
+            except requests.exceptions.RequestException:
+                raise RuntimeError(
+                    f"Error loading graph data from {API_URL}\nDo you have connectivity to that endpoint?"
+                )
 
         self.last_updated = datetime.datetime.fromtimestamp(json_link_data["updated"])
         self.routers = json_link_data["areas"]["0.0.0.0"]["routers"]

@@ -1,13 +1,16 @@
+import os
+
 from flask import Flask, request
 from flask_cors import CORS
 
 from nycmesh_ospf_explorer.graph import OSPFGraph
-from nycmesh_ospf_explorer.utils import compute_ip_from_nn, compute_nn_from_ip
 
 app = Flask(__name__)
 CORS(app)
 
-graph = OSPFGraph()
+
+if "FLASK_ENV" in os.environ:
+    graph = OSPFGraph()
 
 
 def validate_nn(nn: str):
