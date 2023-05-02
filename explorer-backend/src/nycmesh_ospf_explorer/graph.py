@@ -1,5 +1,7 @@
 import datetime
 import os
+from typing import List
+
 import networkx as nx
 import requests
 
@@ -56,11 +58,23 @@ class OSPFGraph:
 
             self._graph.add_node(router_id, exit=is_exit, networks=networks)
 
+        self._drop_no_metadata_nodes()
+
         # Get only the largest connected component
         largest_connected = max(
             nx.connected_components(self._graph.to_undirected()), key=len
         )
         self._graph = self._graph.subgraph(largest_connected).copy()
+
+    def _drop_no_metadata_nodes(self):
+        nodes_to_drop = [node for node in self._graph.nodes if node not in self.routers]
+        for node in nodes_to_drop:
+            self._graph.remove_node(node)
+
+        print(
+            f"WARN: Dropped the following nodes {nodes_to_drop} becauase we didn't find router entries for them. "
+            f"However, they appeared as links from other nodes. Check OSPF DB consistency."
+        )
 
     def _get_neighbors_subgraph(
         self, router_id: str, neighbor_depth: int = 1
@@ -86,6 +100,7 @@ class OSPFGraph:
                 "nn": None,
                 "networks": node["networks"],
                 "exit": node["exit"],
+                "exit_path": self.get_exit_path_for_node(node_id),
                 "missing_edges": sum(
                     1
                     for edge in self._graph.out_edges(node_id)
@@ -135,6 +150,14 @@ class OSPFGraph:
 
     def get_networks_for_node(self, router_id: str) -> dict:
         return self._graph.nodes[router_id]["networks"]
+
+    @property
+    def exit_nodes(self):
+        return set(node[0] for node in self._graph.nodes.data() if node[1]["exit"])
+
+    def get_exit_path_for_node(self, router_id: str) -> List[str]:
+        paths = nx.algorithms.multi_source_dijkstra_path(self._graph, self.exit_nodes)
+        return list(reversed(paths[router_id]))
 
     def get_neighbors_dict(self, router_id: str, neighbor_depth: int = 1) -> dict:
         return self._convert_subgraph_to_json(
