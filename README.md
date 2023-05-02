@@ -1,5 +1,5 @@
 
-# OSPF Data Explorer
+# Node Explorer
 
 Utilizes Andrew's [OSPF JSON API](http://api.andrew.mesh/api/v1/ospf/linkdb) to present an interactive
 visualization of the mesh OSPF data. Can be used to debug or explore OSPF current state information.
@@ -11,7 +11,7 @@ visualization of the mesh OSPF data. Can be used to debug or explore OSPF curren
 If you just want to use this tool and don't need to host your own copy or do development work,
 just connect to the mesh and then check it out at: 
 
-[http://ospf-explorer.andrew.mesh](http://ospf-explorer.andrew.mesh)
+[http://node-explorer.andrew.mesh](http://node-explorer.andrew.mesh)
 
 ## Built with
 - [NetworkX](https://networkx.org/)
@@ -32,13 +32,14 @@ node --version
 
 Then setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
 ```sh
-git clone https://github.com/nycmeshnet/ospf-explorer
-cd nycmesh-ospf-explorer
+git clone https://github.com/nycmeshnet/node-explorer
+cd node-explorer
+cd backend/
 python3 -m venv .venv
 source .venv/bin/activate
 cp .env_example .env
 pip install -e .
-cd frontend && npm install
+cd ../frontend/ && npm install
 ```
 
 ## Running the unit tests
@@ -46,12 +47,12 @@ cd frontend && npm install
 Follow the instructions under "Setup" above, to clone a local copy of this application and activate
 the virtual environment. Then install the test dependencies with:
 ```sh
+cd backend/
 pip install -e ".[test,dev]"
 ```
 
 Finally, invoke the test suite using pytest:
 ```
-cd backend/
 pytest test/
 ```
 
@@ -59,35 +60,26 @@ pytest test/
 
 Start the dev servers with the following commands (multiple shell sessions recommended):
 ```sh
-flask run &
-cd frontend && npm start &
+cd backend/ && flask run &
+cd frontend/ && npm start &
 ```
 
 The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:3000), and the backend at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
-## Production deployment
+## Deployment via Docker
 
-To deploy on a production server, start by following the dev instructions, but on the remote server:
+To make a production build of this application via docker, simply clone the repot and
+use the included build script to create a deployable docker image:
 
-Setup by cloning, creating a virtual env, creating the `.env` file, installing the dependencies, and creating 
-a production build:
 ```sh
-cd /var/www/
-git clone https://github.com/nycmeshnet/ospf-explorer
-cd ospf-explorer
-python3 -m venv .venv
-source .venv/bin/activate
-cp .env_example .env
-pip install -e .
-cd frontend && npm install && npm run build
+git clone https://github.com/nycmeshnet/node-explorer
+bin/docker_build.sh
 ```
 
-Next set up a WSGI
+This should create a docker image called `node-explorer`, which can be run with:
 ```sh
-
+docker run -d -p 80:80  node-explorer
 ```
-
-
 
 ## License
 
