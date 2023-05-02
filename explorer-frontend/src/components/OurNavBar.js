@@ -45,7 +45,7 @@ function OurNavBar() {
           {/*</Nav>*/}
           <Nav className={"ms-auto"} navbar>
             <NavItem className={"ms-auto"}>
-              <NavLink href="https://github.com/nycmeshnet/nycmesh-ospf-explorer">
+              <NavLink href="https://github.com/nycmeshnet/node-explorer">
                 <BsGithub size={25}>GitHub Link</BsGithub>
               </NavLink>
             </NavItem>
