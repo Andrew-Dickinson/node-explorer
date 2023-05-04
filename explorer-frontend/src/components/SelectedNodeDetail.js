@@ -21,6 +21,9 @@ import {
   Row,
   UncontrolledAccordion,
 } from "reactstrap";
+import { ImExit, ImMap, ImLink } from "react-icons/im";
+import { TbChartDots3, TbListDetails, TbNetwork } from "react-icons/tb";
+import { FaNetworkWired } from "react-icons/fa";
 
 function ip2int(ip) {
   return (
@@ -86,45 +89,54 @@ function SelectedNodeDetail(props) {
               <h6>OSPF Router ID: {routerId}</h6>
             </CardSubtitle>
           </CardHeader>
-          <CardBody>
-            <CardText>
-              <b>Map Link: </b>
-              {nn_int ? (
-                <a href={"https://www.nycmesh.net/map/nodes/" + nn_int}>
-                  NN{nn_int}
-                </a>
-              ) : (
-                "N/A"
-              )}
-              <br />
-              <b>Is Exit: </b>
-              {is_exit ? "Yes" : "No"}
-              <br />
-              <b>Exit Path: </b>
-              <ul>
-                {exit_path.map((router_id) => (
-                  <li key={router_id}>
-                    <a
-                      href={"/explorer?router=" + router_id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        updateSelectedRouter(router_id);
-                      }}
-                    >
-                      {router_id}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </CardText>
-          </CardBody>
-          <UncontrolledAccordion
-            defaultOpen={"0"}
-            flush
-            className={"border-top"}
-          >
+          <UncontrolledAccordion defaultOpen={"-1"} flush>
             <AccordionItem>
-              <AccordionHeader targetId="0">Adjacent Routers</AccordionHeader>
+              <AccordionHeader targetId="-1">
+                <TbListDetails />
+                &nbsp;&nbsp;Node Details
+              </AccordionHeader>
+              <AccordionBody accordionId="-1">
+                <b>
+                  <ImMap /> Map Link:{" "}
+                </b>
+                {nn_int ? (
+                  <a href={"https://www.nycmesh.net/map/nodes/" + nn_int}>
+                    NN{nn_int}
+                  </a>
+                ) : (
+                  "N/A"
+                )}
+                <br />
+                <b>
+                  <ImExit /> Is Exit:{" "}
+                </b>
+                {is_exit ? "Yes" : "No"}
+                <br />
+                <b>
+                  <TbChartDots3 /> Exit Path:{" "}
+                </b>
+                <ul className={"m-0"}>
+                  {exit_path.map((router_id) => (
+                    <li key={router_id}>
+                      <a
+                        href={"/explorer?router=" + router_id}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          updateSelectedRouter(router_id);
+                        }}
+                      >
+                        {router_id}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionBody>
+            </AccordionItem>
+            <AccordionItem>
+              <AccordionHeader targetId="0">
+                <ImLink />
+                &nbsp;&nbsp;Adjacent Routers
+              </AccordionHeader>
               <AccordionBody accordionId="0">
                 <ListGroup>
                   {routers.map((router, i) => (
@@ -148,7 +160,8 @@ function SelectedNodeDetail(props) {
             </AccordionItem>
             <AccordionItem>
               <AccordionHeader targetId="2">
-                Advertised Stubnets
+                <FaNetworkWired />
+                &nbsp;&nbsp;Advertised Stubnets
               </AccordionHeader>
               <AccordionBody accordionId="2">
                 {generateNetList(stubnets)}
@@ -156,7 +169,8 @@ function SelectedNodeDetail(props) {
             </AccordionItem>
             <AccordionItem>
               <AccordionHeader targetId="3">
-                Advertised External Networks
+                <TbNetwork />
+                &nbsp;&nbsp;Advertised External Networks
               </AccordionHeader>
               <AccordionBody accordionId="3">
                 {generateNetList(external)}

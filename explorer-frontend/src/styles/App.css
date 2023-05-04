@@ -1,5 +1,9 @@
 
 .graph-view {
     background-color: #eeeeee;
-    /*border-radius: 20px;*/
+}
+
+.shift-up {
+    position: relative;
+    top: -2px;
 }

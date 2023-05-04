@@ -12,8 +12,9 @@ import {
   Row,
   Spinner,
 } from "reactstrap";
-import { BsClock, BsClockFill, BsGithub } from "react-icons/bs";
+import { BsClockFill, BsRouterFill } from "react-icons/bs";
 import moment from "moment";
+import { FaArrowAltCircleRight } from "react-icons/fa";
 
 function NodeSearchBar(props) {
   const { routerId, updateRouterId, loading, updatedTime } = props;
@@ -75,15 +76,14 @@ function NodeSearchBar(props) {
             disabled={loading || !(isValidIpAddress() || isValidNN())}
             onClick={() => handleSubmit()}
           >
-            {loading ? "Loading " : "Go To Node "}
+            {loading ? "Loading" : "Go to"}&nbsp;&nbsp;
             {loading ? (
               <Spinner
-                // type="grow"
                 role="status"
                 style={{ width: "0.8rem", height: "0.8rem" }}
               />
             ) : (
-              <></>
+              <FaArrowAltCircleRight className={"shift-up"} />
             )}
           </Button>
         </InputGroup>
@@ -97,7 +97,7 @@ function NodeSearchBar(props) {
                 {updatedTime ? moment.unix(updatedTime).fromNow() : "Never"}
                 {"  "}
               </i>
-              <BsClockFill>Clock</BsClockFill>
+              <BsClockFill className={"shift-up"}>Clock</BsClockFill>
             </CardText>
           </CardBody>
         </Card>
