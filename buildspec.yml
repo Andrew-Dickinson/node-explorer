@@ -2,9 +2,9 @@ version: 0.2
 
 phases:
   install:
-    commands:
-      - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+    - export DOCKERHUB_USER=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_USER')
+    - export DOCKERHUB_PASS=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_PASS')
+    - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
   build:
     commands:
       - echo Build started on `date`
@@ -13,5 +13,7 @@ phases:
       - docker tag node-explorer:latest $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/node-explorer:latest
   post_build:
     commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/node-explorer:latest
       - aws ecs update-service --cluster Mesh-Services --service Node-Explorer-Fargate --force-new-deployment
