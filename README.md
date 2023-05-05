@@ -68,7 +68,7 @@ The frontend should be accessible at [http://127.0.0.1:3000](http://127.0.0.1:30
 
 ## Deployment via Docker
 
-To make a production build of this application via docker, simply clone the repot and
+To make a production build of this application via docker, simply clone the repo and
 use the included build script to create a deployable docker image:
 
 ```sh
