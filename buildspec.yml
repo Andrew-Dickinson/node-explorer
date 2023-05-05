@@ -2,9 +2,10 @@ version: 0.2
 
 phases:
   install:
-    - export DOCKERHUB_USER=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_USER')
-    - export DOCKERHUB_PASS=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_PASS')
-    - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+    commands:
+      - export DOCKERHUB_USER=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_USER')
+      - export DOCKERHUB_PASS=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_PASS')
+      - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
   build:
     commands:
       - echo Build started on `date`
