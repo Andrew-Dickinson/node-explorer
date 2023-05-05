@@ -14,3 +14,4 @@ phases:
   post_build:
     commands:
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/node-explorer:latest
+      - aws ecs update-service --cluster Mesh-Services --service Node-Explorer-Fargate --force-new-deployment
