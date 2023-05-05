@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.urls]
-repository = "https://github.com/nycmeshnet/nycmesh-ospf-explorer"
+repository = "https://github.com/Andrew-Dickinson/nycmesh-ospf-explorer"
 
 [project.optional-dependencies]
 test = [

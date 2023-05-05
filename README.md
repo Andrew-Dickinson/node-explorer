@@ -32,7 +32,7 @@ node --version
 
 Then setup by cloning, creating a virtual env, creating the `.env` file, and installing the dependencies
 ```sh
-git clone https://github.com/nycmeshnet/node-explorer
+git clone https://github.com/Andrew-Dickinson/node-explorer
 cd node-explorer
 cd explorer-backend/
 python3 -m venv .venv
@@ -72,7 +72,7 @@ To make a production build of this application via docker, simply clone the repo
 use the included build script to create a deployable docker image:
 
 ```sh
-git clone https://github.com/nycmeshnet/node-explorer
+git clone https://github.com/Andrew-Dickinson/node-explorer
 bin/docker_build.sh
 ```
 
