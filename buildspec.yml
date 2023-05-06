@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-       python: 3.10
+       python: 3.9
     commands:
       - export DOCKERHUB_USER=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_USER')
       - export DOCKERHUB_PASS=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_PASS')
