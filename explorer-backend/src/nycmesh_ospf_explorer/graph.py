@@ -21,6 +21,7 @@ class OSPFGraph:
         self.last_updated = datetime.datetime.fromtimestamp(0)
 
         self._graph = nx.MultiDiGraph()
+        self._egress_forest = nx.DiGraph()
 
         if load_data:
             self.update_link_data()
@@ -65,6 +66,7 @@ class OSPFGraph:
             nx.connected_components(self._graph.to_undirected()), key=len
         )
         self._graph = self._graph.subgraph(largest_connected).copy()
+        self._egress_forest = self._compute_egress_forest()
 
     def _drop_no_metadata_nodes(self):
         nodes_to_drop = [node for node in self._graph.nodes if node not in self.routers]
@@ -75,6 +77,17 @@ class OSPFGraph:
             f"WARN: Dropped the following nodes {nodes_to_drop} becauase we didn't find router entries for them. "
             f"However, they appeared as links from other nodes. Check OSPF DB consistency."
         )
+
+    def _compute_egress_forest(self):
+        paths = nx.algorithms.multi_source_dijkstra_path(self._graph, self.exit_nodes)
+
+        egress_forest = nx.DiGraph(
+            (node_id, egress_path[-2])
+            for node_id, egress_path in paths.items()
+            if len(egress_path) > 1
+        )
+
+        return egress_forest
 
     def _get_neighbors_subgraph(
         self, router_id: str, neighbor_depth: int = 1
@@ -158,8 +171,20 @@ class OSPFGraph:
         return set(node[0] for node in self._graph.nodes.data() if node[1]["exit"])
 
     def get_exit_path_for_node(self, router_id: str) -> List[str]:
-        paths = nx.algorithms.multi_source_dijkstra_path(self._graph, self.exit_nodes)
-        return list(reversed(paths[router_id]))
+        def recurse_exit_path(current_path):
+            current_node = current_path[-1]
+            out_edges = list(self._egress_forest.out_edges(current_node))
+
+            if len(out_edges) == 0:
+                # If there is nowhere else to go, this must be the exit
+                return current_path
+
+            next_node = out_edges[0][1]
+            current_path.append(next_node)
+
+            return recurse_exit_path(current_path)
+
+        return recurse_exit_path([router_id])
 
     def get_neighbors_dict(self, router_id: str, neighbor_depth: int = 1) -> dict:
         return self._convert_subgraph_to_json(
