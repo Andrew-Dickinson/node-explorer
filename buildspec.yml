@@ -13,6 +13,7 @@ phases:
       - cd explorer-backend/
       - pip install ".[dev,test]"
       - pytest test/
+      - cd ..
   build:
     commands:
       - echo Build started on `date`
