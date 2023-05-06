@@ -8,6 +8,7 @@ COPY package*.json ./
 
 RUN npm ci
 
+ARG GIT_COMMIT_HASH
 ENV REACT_APP_COMMIT_HASH=$GIT_COMMIT_HASH
 
 COPY . .
