@@ -10,8 +10,9 @@ phases:
       - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
   pre_build:
     commands:
-      - cd explorer-backend/ && pip install ".[dev,test]"
-      - pytest explorer-backend/test/
+      - cd explorer-backend/
+      - pip install ".[dev,test]"
+      - pytest test/
   build:
     commands:
       - echo Build started on `date`
