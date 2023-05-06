@@ -17,7 +17,10 @@ TEST_FOUR_NODE_GRAPH = {
                         "router": [
                             {"id": "10.69.0.1", "metric": 10},
                             {"id": "10.69.0.3", "metric": 100},
-                        ]
+                        ],
+                        "external": [
+                            {"id": "0.0.0.0/0", "metric": 1},
+                        ],
                     }
                 },
                 "10.69.0.3": {
@@ -53,6 +56,7 @@ TEST_THREE_NODE_GRAPH_WITH_METADATA = {
                         "router": [{"id": "10.69.0.2", "metric": 10}],
                         "stubnet": [{"id": "10.69.4.98/32", "metric": 0}],
                         "external": [
+                            {"id": "0.0.0.0/0", "metric": 1},
                             {"id": "10.70.251.60/30", "metric2": 10},
                             {
                                 "id": "199.170.132.64/26",
@@ -138,6 +142,7 @@ def test_metadata():
     assert graph._graph.nodes["10.69.0.1"]["networks"] == {
         "stubnet": [{"id": "10.69.4.98/32", "metric": 0}],
         "external": [
+            {"id": "0.0.0.0/0", "metric": 1},
             {"id": "10.70.251.60/30", "metric2": 10},
             {
                 "id": "199.170.132.64/26",
@@ -298,25 +303,33 @@ def test_convert_full_subgraph_to_json():
             {
                 "id": "10.69.0.1",
                 "nn": "1",
+                "nn_int": 1,
                 "networks": {"router": [{"id": "10.69.0.2", "metric": 10}]},
                 "exit": False,
+                "exit_path": ["10.69.0.1", "10.69.0.2"],
                 "missing_edges": 0,
             },
             {
                 "id": "10.69.0.2",
                 "nn": "2",
+                "nn_int": 2,
                 "networks": {
                     "router": [
                         {"id": "10.69.0.1", "metric": 10},
                         {"id": "10.69.0.3", "metric": 100},
-                    ]
+                    ],
+                    "external": [
+                        {"id": "0.0.0.0/0", "metric": 1},
+                    ],
                 },
-                "exit": False,
+                "exit": True,
+                "exit_path": ["10.69.0.2"],
                 "missing_edges": 0,
             },
             {
                 "id": "10.69.0.3",
                 "nn": "3",
+                "nn_int": 3,
                 "networks": {
                     "router": [
                         {"id": "10.69.0.2", "metric": 100},
@@ -325,11 +338,13 @@ def test_convert_full_subgraph_to_json():
                     ]
                 },
                 "exit": False,
+                "exit_path": ["10.69.0.3", "10.69.0.2"],
                 "missing_edges": 0,
             },
             {
                 "id": "10.70.0.4",
                 "nn": None,
+                "nn_int": None,
                 "networks": {
                     "router": [
                         {"id": "10.69.0.3", "metric": 10},
@@ -337,6 +352,7 @@ def test_convert_full_subgraph_to_json():
                     ]
                 },
                 "exit": False,
+                "exit_path": ["10.70.0.4", "10.69.0.3", "10.69.0.2"],
                 "missing_edges": 0,
             },
         ],
@@ -365,18 +381,24 @@ def test_convert_partial_subgraph_to_json():
             {
                 "id": "10.69.0.2",
                 "nn": "2",
+                "nn_int": 2,
                 "networks": {
                     "router": [
                         {"id": "10.69.0.1", "metric": 10},
                         {"id": "10.69.0.3", "metric": 100},
-                    ]
+                    ],
+                    "external": [
+                        {"id": "0.0.0.0/0", "metric": 1},
+                    ],
                 },
-                "exit": False,
+                "exit": True,
+                "exit_path": ["10.69.0.2"],
                 "missing_edges": 1,
             },
             {
                 "id": "10.69.0.3",
                 "nn": "3",
+                "nn_int": 3,
                 "networks": {
                     "router": [
                         {"id": "10.69.0.2", "metric": 100},
@@ -385,6 +407,7 @@ def test_convert_partial_subgraph_to_json():
                     ]
                 },
                 "exit": False,
+                "exit_path": ["10.69.0.3", "10.69.0.2"],
                 "missing_edges": 2,
             },
         ],
@@ -405,20 +428,27 @@ def test_get_neighbors_dict():
             {
                 "id": "10.69.0.1",
                 "nn": "1",
+                "nn_int": 1,
                 "networks": {"router": [{"id": "10.69.0.2", "metric": 10}]},
                 "exit": False,
+                "exit_path": ["10.69.0.1", "10.69.0.2"],
                 "missing_edges": 0,
             },
             {
                 "id": "10.69.0.2",
                 "nn": "2",
+                "nn_int": 2,
                 "networks": {
                     "router": [
                         {"id": "10.69.0.1", "metric": 10},
                         {"id": "10.69.0.3", "metric": 100},
-                    ]
+                    ],
+                    "external": [
+                        {"id": "0.0.0.0/0", "metric": 1},
+                    ],
                 },
-                "exit": False,
+                "exit": True,
+                "exit_path": ["10.69.0.2"],
                 "missing_edges": 1,
             },
         ],
