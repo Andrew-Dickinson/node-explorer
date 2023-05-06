@@ -8,7 +8,7 @@ phases:
       - export DOCKERHUB_USER=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_USER')
       - export DOCKERHUB_PASS=$(aws secretsmanager get-secret-value --secret-id /creds/dockerhub --query SecretString --output text | jq -r '.DOCKERHUB_PASS')
       - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-  pre-build:
+  pre_build:
     commands:
       - pip install -e "explorer-backend[dev,test]"
       - pytest explorer-backend/test/
