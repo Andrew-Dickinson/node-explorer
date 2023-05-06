@@ -9,6 +9,7 @@ import {
   NavLink,
 } from "reactstrap";
 import { BsGithub } from "react-icons/bs";
+import { COMMIT_HASH } from "../constants";
 
 function OurNavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,6 +48,17 @@ function OurNavBar() {
             <NavItem className={"ms-auto"}>
               <NavLink href="https://github.com/Andrew-Dickinson/node-explorer">
                 <BsGithub size={25}>GitHub Link</BsGithub>
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                href={
+                  "https://github.com/Andrew-Dickinson/node-explorer/commit/" +
+                  COMMIT_HASH
+                }
+                className={"fst-italic"}
+              >
+                {COMMIT_HASH.substring(0, 7)}
               </NavLink>
             </NavItem>
           </Nav>
