@@ -100,7 +100,7 @@ function SelectedNodeDetail(props) {
                   <ImMap /> Map Link:{" "}
                 </b>
                 {nn_int ? (
-                  <a href={"https://www.nycmesh.net/map/nodes/" + nn_int}>
+                  <a href={"https://www.nycmesh.net/map/nodes/" + nn_int} target="_blank" rel="noreferrer" >
                     NN{nn_int}
                   </a>
                 ) : (
