@@ -31,7 +31,7 @@ def compute_nn_string_from_ip(ip: str) -> str:
 
     router_idx = fourth_octet // 100
 
-    while fourth_octet > 100:
+    while fourth_octet >= 100:
         fourth_octet -= 100
 
     if third_octet > 100:

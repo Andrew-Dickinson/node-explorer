@@ -62,6 +62,7 @@ def test_convert_ip_to_nn_string():
     assert compute_nn_string_from_ip("10.69.5.131") == "531 (.1xx)"
     assert compute_nn_string_from_ip("10.69.14.155") == "1455 (.1xx)"
     assert compute_nn_string_from_ip("10.69.23.197") == "2397 (.1xx)"
+    assert compute_nn_string_from_ip("10.69.78.100") == "7800 (.1xx)"
 
     # Third Router  (where applicable)
     assert compute_nn_string_from_ip("10.69.0.202") == "2 (.2xx)"
@@ -69,3 +70,4 @@ def test_convert_ip_to_nn_string():
     assert compute_nn_string_from_ip("10.69.0.214") == "14 (.2xx)"
     assert compute_nn_string_from_ip("10.69.1.245") == "145 (.2xx)"
     assert compute_nn_string_from_ip("10.69.5.231") == "531 (.2xx)"
+    assert compute_nn_string_from_ip("10.69.78.200") == "7800 (.2xx)"
