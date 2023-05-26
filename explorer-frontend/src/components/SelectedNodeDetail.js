@@ -40,8 +40,7 @@ function generateNetList(networks) {
       {networks.map((networkDetail, i) => (
         <ListGroupItem key={i}>
           <b>{networkDetail.id}</b> (Cost{" "}
-          {networkDetail.metric2 ? networkDetail.metric2 : networkDetail.metric}
-          )
+          {networkDetail.metric2 ? networkDetail.metric2 : networkDetail.metric})
         </ListGroupItem>
       ))}
     </ListGroup>
@@ -139,7 +138,7 @@ function SelectedNodeDetail(props) {
             <AccordionItem>
               <AccordionHeader targetId="0">
                 <ImLink />
-                &nbsp;&nbsp;Adjacent Routers
+                &nbsp;&nbsp;Adjacent Routers ({routers.length ?? 0})
               </AccordionHeader>
               <AccordionBody accordionId="0">
                 <ListGroup>
@@ -165,20 +164,16 @@ function SelectedNodeDetail(props) {
             <AccordionItem>
               <AccordionHeader targetId="2">
                 <FaNetworkWired />
-                &nbsp;&nbsp;Advertised Stubnets
+                &nbsp;&nbsp;Advertised Stubnets ({stubnets.length ?? 0})
               </AccordionHeader>
-              <AccordionBody accordionId="2">
-                {generateNetList(stubnets)}
-              </AccordionBody>
+              <AccordionBody accordionId="2">{generateNetList(stubnets)}</AccordionBody>
             </AccordionItem>
             <AccordionItem>
               <AccordionHeader targetId="3">
                 <TbNetwork />
-                &nbsp;&nbsp;Advertised External Networks
+                &nbsp;&nbsp;Advertised External Networks ({external.length ?? 0})
               </AccordionHeader>
-              <AccordionBody accordionId="3">
-                {generateNetList(external)}
-              </AccordionBody>
+              <AccordionBody accordionId="3">{generateNetList(external)}</AccordionBody>
             </AccordionItem>
           </UncontrolledAccordion>
         </Card>
