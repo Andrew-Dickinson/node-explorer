@@ -29,7 +29,9 @@ test = [
 ]
 dev = [
     "build",
-    "twine"
+    "twine",
+    "black",
+    "isort",
 ]
 
 [build-system]
@@ -38,3 +40,6 @@ build-backend = 'setuptools.build_meta'
 
 [project.scripts]
 nycmesh-ospf-explorer = "nycmesh_ospf_explorer:main.main"
+
+[tool.black]
+line-length = 100

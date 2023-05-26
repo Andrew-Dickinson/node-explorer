@@ -30,12 +30,9 @@ class OSPFGraph:
         self._graph = nx.MultiDiGraph()
         for router_id, router in self.routers.items():
             for other_router in router.get("links", {}).get("router", []):
-                self._graph.add_edge(
-                    router_id, other_router["id"], weight=other_router["metric"]
-                )
+                self._graph.add_edge(router_id, other_router["id"], weight=other_router["metric"])
             is_exit = any(
-                link["id"] == "0.0.0.0/0"
-                for link in router.get("links", {}).get("external", [])
+                link["id"] == "0.0.0.0/0" for link in router.get("links", {}).get("external", [])
             )
 
             network_connected_routers = []
@@ -44,9 +41,7 @@ class OSPFGraph:
                 cost = network_link_info["metric"]
                 for other_router_id in self.networks[network_cidr]["routers"]:
                     if other_router_id != router_id:
-                        network_connected_routers.append(
-                            {"id": other_router_id, "metric": cost}
-                        )
+                        network_connected_routers.append({"id": other_router_id, "metric": cost})
                         self._graph.add_edge(router_id, other_router_id, weight=cost)
 
             networks = router.get("links").copy()
@@ -57,14 +52,12 @@ class OSPFGraph:
                 networks["router"] = networks.get("router", [])
                 networks["router"].extend(network_connected_routers)
 
-            self._graph.add_node(router_id, exit=is_exit, networks=networks)
+            self._graph.add_node(router_id, networks=networks)
 
         self._drop_no_metadata_nodes()
 
         # Get only the largest connected component
-        largest_connected = max(
-            nx.connected_components(self._graph.to_undirected()), key=len
-        )
+        largest_connected = max(nx.connected_components(self._graph.to_undirected()), key=len)
         self._graph = self._graph.subgraph(largest_connected).copy()
         self._egress_forest = self._compute_egress_forest()
 
@@ -78,8 +71,49 @@ class OSPFGraph:
             f"However, they appeared as links from other nodes. Check OSPF DB consistency."
         )
 
+    def _create_graph_with_exit_placeholders(self):
+        graph_with_exit_placeholders = self._graph.copy()
+
+        exit_placeholders = set()
+        nodes_with_exit = [
+            node
+            for node in self._graph.nodes.data()
+            if any(
+                network["id"] == "0.0.0.0/0"
+                for network in node[1].get("networks", {}).get("external", [])
+            )
+        ]
+
+        for node in nodes_with_exit:
+            external_costs = {
+                link["id"]: link.get("metric") if "metric" in link else link.get("metric2")
+                for link in node[1].get("networks", {}).get("external", [])
+            }
+            direct_exit_cost = external_costs.get("0.0.0.0/0")
+            if direct_exit_cost is not None:
+                graph_with_exit_placeholders.add_node(node[0] + "_0.0.0.0/0")
+                graph_with_exit_placeholders.add_edge(
+                    node[0],
+                    node[0] + "_0.0.0.0/0",
+                    weight=direct_exit_cost,
+                )
+                graph_with_exit_placeholders.add_edge(
+                    node[0] + "_0.0.0.0/0",
+                    node[0],
+                    weight=direct_exit_cost,
+                )
+                exit_placeholders.add(node[0] + "_0.0.0.0/0")
+
+        return graph_with_exit_placeholders, exit_placeholders
+
     def _compute_egress_forest(self):
-        paths = nx.algorithms.multi_source_dijkstra_path(self._graph, self.exit_nodes)
+        (
+            graph_with_exit_placeholders,
+            exit_placeholders,
+        ) = self._create_graph_with_exit_placeholders()
+        paths = nx.algorithms.multi_source_dijkstra_path(
+            graph_with_exit_placeholders, exit_placeholders
+        )
 
         egress_forest = nx.DiGraph(
             (node_id, egress_path[-2])
@@ -89,9 +123,7 @@ class OSPFGraph:
 
         return egress_forest
 
-    def _get_neighbors_subgraph(
-        self, router_id: str, neighbor_depth: int = 1
-    ) -> nx.MultiDiGraph:
+    def _get_neighbors_subgraph(self, router_id: str, neighbor_depth: int = 1) -> nx.MultiDiGraph:
         node_set = {router_id}
         for i in range(neighbor_depth):
             new_nodes = set({})
@@ -115,9 +147,7 @@ class OSPFGraph:
                 "networks": node["networks"],
                 "exit_path": self.get_exit_path_for_node(node_id),
                 "missing_edges": sum(
-                    1
-                    for edge in self._graph.out_edges(node_id)
-                    if edge not in subgraph.edges
+                    1 for edge in self._graph.out_edges(node_id) if edge not in subgraph.edges
                 ),
             }
 
@@ -165,10 +195,6 @@ class OSPFGraph:
     def get_networks_for_node(self, router_id: str) -> dict:
         return self._graph.nodes[router_id]["networks"]
 
-    @property
-    def exit_nodes(self):
-        return set(node[0] for node in self._graph.nodes.data() if node[1]["exit"])
-
     def get_exit_path_for_node(self, router_id: str) -> List[str]:
         def recurse_exit_path(current_path):
             current_node = current_path[-1]
@@ -183,7 +209,7 @@ class OSPFGraph:
 
             return recurse_exit_path(current_path)
 
-        return recurse_exit_path([router_id])
+        return recurse_exit_path([router_id])[:-1]  # Remove the exit placeholder
 
     def get_neighbors_dict(self, router_id: str, neighbor_depth: int = 1) -> dict:
         return self._convert_subgraph_to_json(

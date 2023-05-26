@@ -38,7 +38,10 @@ TEST_FOUR_NODE_GRAPH = {
                         "router": [
                             {"id": "10.69.0.3", "metric": 10},
                             {"id": "10.69.0.3", "metric": 100},
-                        ]
+                        ],
+                        "external": [
+                            {"id": "0.0.0.0/0", "metric": 10000},
+                        ],
                     },
                 },
             },
@@ -69,9 +72,7 @@ TEST_THREE_NODE_GRAPH_WITH_METADATA = {
                     }
                 },
                 "10.69.0.2": {"links": {"router": [{"id": "10.69.0.1", "metric": 10}]}},
-                "10.69.0.3": {
-                    "links": {"network": [{"id": "10.70.76.0/24", "metric": 10}]}
-                },
+                "10.69.0.3": {"links": {"network": [{"id": "10.70.76.0/24", "metric": 10}]}},
             },
             "networks": {
                 "10.70.76.0/24": {
@@ -259,14 +260,8 @@ def test_metadata():
     assert "network" not in graph._graph.nodes["10.69.0.1"]["networks"]
     assert "network" not in graph._graph.nodes["10.69.0.2"]["networks"]
 
-    assert (
-        graph.get_networks_for_node("10.69.0.1")
-        == graph._graph.nodes["10.69.0.1"]["networks"]
-    )
-    assert (
-        graph.get_networks_for_node("10.69.0.2")
-        == graph._graph.nodes["10.69.0.2"]["networks"]
-    )
+    assert graph.get_networks_for_node("10.69.0.1") == graph._graph.nodes["10.69.0.1"]["networks"]
+    assert graph.get_networks_for_node("10.69.0.2") == graph._graph.nodes["10.69.0.2"]["networks"]
 
 
 def test_contains_node():
@@ -444,7 +439,8 @@ def test_convert_full_subgraph_to_json():
                     "router": [
                         {"id": "10.69.0.3", "metric": 10},
                         {"id": "10.69.0.3", "metric": 100},
-                    ]
+                    ],
+                    "external": [{"id": "0.0.0.0/0", "metric": 10000}],
                 },
                 "exit_path": ["10.70.0.4", "10.69.0.3", "10.69.0.2"],
                 "missing_edges": 0,
@@ -468,9 +464,7 @@ def test_convert_partial_subgraph_to_json():
 
     graph.update_link_data(TEST_FOUR_NODE_GRAPH)
 
-    assert graph._convert_subgraph_to_json(
-        graph._graph.subgraph(["10.69.0.2", "10.69.0.3"])
-    ) == {
+    assert graph._convert_subgraph_to_json(graph._graph.subgraph(["10.69.0.2", "10.69.0.3"])) == {
         "nodes": [
             {
                 "id": "10.69.0.2",
@@ -572,11 +566,11 @@ def test_multiple_exits():
     exit_tree_node_2 = egress_forest.subgraph(
         nx.node_connected_component(egress_forest.to_undirected(), "10.69.0.2")
     )
-    assert len(exit_tree_node_2.nodes) == 6
-    assert len(exit_tree_node_2.edges) == 5
+    assert len(exit_tree_node_2.nodes) == 6 + 1  # Extra node for exit placeholder
+    assert len(exit_tree_node_2.edges) == 5 + 1  # Extra edge for exit placeholder
 
     for node in exit_tree_node_2:
-        if node == "10.69.0.2":
+        if node == "10.69.0.2_0.0.0.0/0":
             assert exit_tree_node_2.out_degree(node) == 0
         else:
             assert exit_tree_node_2.out_degree(node) == 1
@@ -584,6 +578,10 @@ def test_multiple_exits():
     assert list(exit_tree_node_2.out_edges("10.69.0.1"))[0] == (
         "10.69.0.1",
         "10.69.0.2",
+    )
+    assert list(exit_tree_node_2.out_edges("10.69.0.2"))[0] == (
+        "10.69.0.2",
+        "10.69.0.2_0.0.0.0/0",
     )
     assert list(exit_tree_node_2.out_edges("10.69.0.3"))[0] == (
         "10.69.0.3",
@@ -605,12 +603,13 @@ def test_multiple_exits():
     exit_tree_node_8 = egress_forest.subgraph(
         nx.node_connected_component(egress_forest.to_undirected(), "10.69.0.8")
     )
-    assert len(exit_tree_node_8.nodes) == 3
-    assert len(exit_tree_node_8.edges) == 2
+    assert len(exit_tree_node_8.nodes) == 3 + 1  # Extra node for exit placeholder
+    assert len(exit_tree_node_8.edges) == 2 + 1  # Extra edge for exit placeholder
 
     assert exit_tree_node_8.out_degree("10.69.0.6") == 1
     assert exit_tree_node_8.out_degree("10.69.0.7") == 1
-    assert exit_tree_node_8.out_degree("10.69.0.8") == 0
+    assert exit_tree_node_8.out_degree("10.69.0.8") == 1
+    assert exit_tree_node_8.out_degree("10.69.0.8_0.0.0.0/0") == 0
 
     assert list(exit_tree_node_8.out_edges("10.69.0.6"))[0] == (
         "10.69.0.6",
@@ -619,4 +618,8 @@ def test_multiple_exits():
     assert list(exit_tree_node_8.out_edges("10.69.0.7"))[0] == (
         "10.69.0.7",
         "10.69.0.8",
+    )
+    assert list(exit_tree_node_8.out_edges("10.69.0.8"))[0] == (
+        "10.69.0.8",
+        "10.69.0.8_0.0.0.0/0",
     )
