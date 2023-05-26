@@ -53,16 +53,15 @@ function SelectedNodeDetail(props) {
   const nn = nodeDetail?.nn ?? null;
   const nn_int = nodeDetail?.nn_int ?? null;
   const exit_path = nodeDetail?.exit_path ?? [];
+  const is_exit = exit_path.length === 1;
   const routerId = nodeDetail?.id ?? null;
 
   const routers = nodeDetail?.networks?.router ?? [];
   const external = nodeDetail?.networks?.external ?? [];
   const stubnets = nodeDetail?.networks?.stubnet ?? [];
 
-  const is_exit = nodeDetail?.exit ?? null;
-
   const default_route = external.filter((network) => network.id === "0.0.0.0/0")[0];
-  const direct_exit_cost = default_route?.metric ?? null;
+  const direct_exit_cost = default_route?.metric ?? default_route?.metric2 ?? null;
 
   routers.sort((a, b) => {
     if (ip2int(a.id) < ip2int(b.id)) {
