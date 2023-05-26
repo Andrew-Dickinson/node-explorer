@@ -113,7 +113,6 @@ class OSPFGraph:
                 "nn": None,
                 "nn_int": None,
                 "networks": node["networks"],
-                "exit": node["exit"],
                 "exit_path": self.get_exit_path_for_node(node_id),
                 "missing_edges": sum(
                     1
