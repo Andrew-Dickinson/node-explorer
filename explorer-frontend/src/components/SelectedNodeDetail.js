@@ -52,13 +52,17 @@ function SelectedNodeDetail(props) {
 
   const nn = nodeDetail?.nn ?? null;
   const nn_int = nodeDetail?.nn_int ?? null;
-  const is_exit = nodeDetail?.exit ?? null;
   const exit_path = nodeDetail?.exit_path ?? [];
   const routerId = nodeDetail?.id ?? null;
 
   const routers = nodeDetail?.networks?.router ?? [];
   const external = nodeDetail?.networks?.external ?? [];
   const stubnets = nodeDetail?.networks?.stubnet ?? [];
+
+  const is_exit = nodeDetail?.exit ?? null;
+
+  const default_route = external.filter((network) => network.id === "0.0.0.0/0")[0];
+  const direct_exit_cost = default_route?.metric ?? null;
 
   routers.sort((a, b) => {
     if (ip2int(a.id) < ip2int(b.id)) {
@@ -113,7 +117,7 @@ function SelectedNodeDetail(props) {
                 <b>
                   <ImExit /> Is Exit:{" "}
                 </b>
-                {is_exit ? "Yes" : "No"}
+                {is_exit ? `Yes (cost ${direct_exit_cost})` : "No"}
                 <br />
                 <b>
                   <TbChartDots3 /> Exit Path:{" "}

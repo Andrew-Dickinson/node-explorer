@@ -49,9 +49,7 @@ function computeEdgeCosts(edges) {
   for (const edgePair of Object.keys(edgeCosts)) {
     edgeCosts[edgePair].invalid = false;
 
-    const costArraysForThisPair = Object.values(
-      edgeCosts[edgePair].individualCosts
-    );
+    const costArraysForThisPair = Object.values(edgeCosts[edgePair].individualCosts);
     if (costArraysForThisPair[0].length !== costArraysForThisPair[1].length) {
       edgeCosts[edgePair].invalid = true;
       continue;
@@ -73,6 +71,7 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
   for (const node of graphData.nodes) {
     const classes = ["primaryNode"];
     if (node.id === selectedNode) classes.push("selected");
+    if (node.exit) classes.push("exit");
     outputElements.push({
       data: { id: node.id, label: node.nn ?? node.id },
       classes: classes,
@@ -137,14 +136,10 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
       if (settings.bothDirections || edge.from < edge.to) {
         const classes = [];
         if (settings.bothDirections) classes.push("directionalEdge");
-        if (edgeCosts[computeNodePairId(edge)].invalid)
-          classes.push("invalidCosts");
+        if (edgeCosts[computeNodePairId(edge)].invalid) classes.push("invalidCosts");
 
         let label = edge.weight;
-        if (
-          !settings.bothDirections &&
-          edgeCosts[computeNodePairId(edge)].invalid
-        ) {
+        if (!settings.bothDirections && edgeCosts[computeNodePairId(edge)].invalid) {
           label = "Mismatch";
         }
 
