@@ -1,14 +1,13 @@
-
 .graph-view {
-    background-color: #eeeeee;
+  background-color: #eeeeee;
 }
 
 .shift-up {
-    position: relative;
-    top: -2px;
+  position: relative;
+  top: -2px;
 }
 
 .commit-hash {
-    color: #888888;
-    font-style: italic;
+  color: #888888;
+  font-style: italic;
 }

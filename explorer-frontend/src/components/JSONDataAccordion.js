@@ -8,7 +8,7 @@ import {
 } from "reactstrap";
 import { CopyBlock, dracula } from "react-code-blocks";
 import React from "react";
-import {GrDocumentText} from "react-icons/gr";
+import { GrDocumentText } from "react-icons/gr";
 
 function JSONDataAccordion(data) {
   return (
@@ -16,7 +16,10 @@ function JSONDataAccordion(data) {
       <Col>
         <UncontrolledAccordion defaultOpen={"0"}>
           <AccordionItem>
-            <AccordionHeader targetId="1"><GrDocumentText/>&nbsp;&nbsp;Raw JSON Data</AccordionHeader>
+            <AccordionHeader targetId="1">
+              <GrDocumentText />
+              &nbsp;&nbsp;Raw JSON Data
+            </AccordionHeader>
             <AccordionBody accordionId="1">
               <CopyBlock
                 language="json"
