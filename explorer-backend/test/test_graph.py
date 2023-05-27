@@ -151,6 +151,7 @@ TEST_NINE_NODE_GRAPH = {
                 "10.69.0.7": {
                     "links": {
                         "router": [
+                            {"id": "10.69.0.4", "metric": 300},
                             {"id": "10.69.0.6", "metric": 10},
                             {"id": "10.69.0.8", "metric": 10},
                             {"id": "10.69.0.8", "metric": 100},
