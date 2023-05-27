@@ -1,6 +1,8 @@
 import datetime
+import json
 import math
 import time
+import os
 
 import networkx
 import networkx as nx
@@ -8,180 +10,18 @@ import pytest
 
 from nycmesh_ospf_explorer.graph import OSPFGraph
 
-TEST_FOUR_NODE_GRAPH = {
-    "areas": {
-        "0.0.0.0": {
-            "routers": {
-                "10.69.0.1": {"links": {"router": [{"id": "10.69.0.2", "metric": 10}]}},
-                "10.69.0.2": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.1", "metric": 10},
-                            {"id": "10.69.0.3", "metric": 100},
-                        ],
-                        "external": [
-                            {"id": "0.0.0.0/0", "metric": 1},
-                        ],
-                    }
-                },
-                "10.69.0.3": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.2", "metric": 100},
-                            {"id": "10.70.0.4", "metric": 10},
-                            {"id": "10.70.0.4", "metric": 100},
-                        ]
-                    }
-                },
-                "10.70.0.4": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.3", "metric": 10},
-                            {"id": "10.69.0.3", "metric": 100},
-                        ],
-                        "external": [
-                            {"id": "0.0.0.0/0", "metric": 10000},
-                        ],
-                    },
-                },
-            },
-            "networks": {},
-        }
-    },
-    "updated": math.floor(time.time()),
-}
 
-TEST_THREE_NODE_GRAPH_WITH_METADATA = {
-    "areas": {
-        "0.0.0.0": {
-            "routers": {
-                "10.69.0.1": {
-                    "links": {
-                        "router": [{"id": "10.69.0.2", "metric": 10}],
-                        "stubnet": [{"id": "10.69.4.98/32", "metric": 0}],
-                        "external": [
-                            {"id": "0.0.0.0/0", "metric": 1},
-                            {"id": "10.70.251.60/30", "metric2": 10},
-                            {
-                                "id": "199.170.132.64/26",
-                                "metric": 20,
-                                "via": "10.70.89.131",
-                            },
-                        ],
-                        "network": [{"id": "10.70.76.0/24", "metric": 10}],
-                    }
-                },
-                "10.69.0.2": {"links": {"router": [{"id": "10.69.0.1", "metric": 10}]}},
-                "10.69.0.3": {"links": {"network": [{"id": "10.70.76.0/24", "metric": 10}]}},
-            },
-            "networks": {
-                "10.70.76.0/24": {
-                    "dr": "10.69.0.1",
-                    "routers": ["10.69.0.1", "10.69.0.3"],
-                }
-            },
-        }
-    },
-    "updated": math.floor(time.time()),
-}
+def load_ospf_dict(graph_fname: str):
+    path = os.path.join(os.path.dirname(__file__), f"sample_graphs/{graph_fname}")
+    with open(path, "r") as f:
+        ospf_dict = json.load(f)
+        ospf_dict["updated"] = math.floor(time.time())
+        return ospf_dict
 
 
-TEST_NINE_NODE_GRAPH = {
-    "areas": {
-        "0.0.0.0": {
-            "routers": {
-                "10.69.0.1": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.2", "metric": 10},
-                            {"id": "10.69.0.5", "metric": 10},
-                            {"id": "10.69.0.5", "metric": 100},
-                            {"id": "10.69.0.9", "metric": 10},
-                        ]
-                    }
-                },
-                "10.69.0.2": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.1", "metric": 10},
-                            {"id": "10.69.0.3", "metric": 100},
-                            {"id": "10.69.0.6", "metric": 100},
-                        ],
-                        "external": [
-                            {"id": "0.0.0.0/0", "metric": 1},
-                        ],
-                    }
-                },
-                "10.69.0.3": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.2", "metric": 100},
-                            {"id": "10.69.0.4", "metric": 10},
-                            {"id": "10.69.0.4", "metric": 100},
-                            {"id": "10.69.0.5", "metric": 100},
-                        ]
-                    }
-                },
-                "10.69.0.4": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.3", "metric": 10},
-                            {"id": "10.69.0.3", "metric": 100},
-                            {"id": "10.69.0.7", "metric": 300},
-                        ]
-                    },
-                },
-                "10.69.0.5": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.1", "metric": 10},
-                            {"id": "10.69.0.1", "metric": 100},
-                            {"id": "10.69.0.3", "metric": 100},
-                        ]
-                    },
-                },
-                "10.69.0.6": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.2", "metric": 100},
-                            {"id": "10.69.0.7", "metric": 10},
-                        ]
-                    },
-                },
-                "10.69.0.7": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.4", "metric": 300},
-                            {"id": "10.69.0.6", "metric": 10},
-                            {"id": "10.69.0.8", "metric": 10},
-                            {"id": "10.69.0.8", "metric": 100},
-                        ]
-                    },
-                },
-                "10.69.0.8": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.7", "metric": 10},
-                            {"id": "10.69.0.7", "metric": 100},
-                        ],
-                        "external": [
-                            {"id": "0.0.0.0/0", "metric": 1},
-                        ],
-                    },
-                },
-                "10.69.0.9": {
-                    "links": {
-                        "router": [
-                            {"id": "10.69.0.1", "metric": 10},
-                        ],
-                    },
-                },
-            },
-            "networks": {},
-        }
-    },
-    "updated": math.floor(time.time()),
-}
+TEST_FOUR_NODE_GRAPH = load_ospf_dict("four_node_graph.json")
+TEST_THREE_NODE_GRAPH_WITH_METADATA = load_ospf_dict("three_node_graph_with_metadata.json")
+TEST_NINE_NODE_GRAPH = load_ospf_dict("nine_node_graph.json")
 
 
 def test_initialization():
