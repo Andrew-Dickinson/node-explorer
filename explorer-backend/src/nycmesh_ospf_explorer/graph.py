@@ -1,6 +1,6 @@
 import datetime
 import os
-from typing import List
+from typing import List, Tuple, Set, Dict
 
 import networkx as nx
 import requests
@@ -71,8 +71,8 @@ class OSPFGraph:
             f"However, they appeared as links from other nodes. Check OSPF DB consistency."
         )
 
-    def _create_graph_with_exit_placeholders(self):
-        graph_with_exit_placeholders = self._graph.copy()
+    def _create_graph_with_exit_placeholders(self) -> Tuple[nx.MultiDiGraph, Set[Tuple[str, dict]]]:
+        graph_with_exit_placeholders: nx.MultiDiGraph = self._graph.copy()
 
         exit_placeholders = set()
         nodes_with_exit = [
@@ -106,7 +106,7 @@ class OSPFGraph:
 
         return graph_with_exit_placeholders, exit_placeholders
 
-    def _compute_egress_forest(self):
+    def _compute_egress_forest(self) -> nx.DiGraph:
         (
             graph_with_exit_placeholders,
             exit_placeholders,

@@ -33,6 +33,9 @@ dev = [
     "black",
     "isort",
 ]
+dev-draw = [
+    "matplotlib",
+]
 
 [build-system]
 requires = ['setuptools>=42']
