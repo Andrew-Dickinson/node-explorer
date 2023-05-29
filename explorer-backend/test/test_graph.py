@@ -22,6 +22,9 @@ def load_ospf_dict(graph_fname: str):
 TEST_FOUR_NODE_GRAPH = load_ospf_dict("four_node_graph.json")
 TEST_THREE_NODE_GRAPH_WITH_METADATA = load_ospf_dict("three_node_graph_with_metadata.json")
 TEST_NINE_NODE_GRAPH = load_ospf_dict("nine_node_graph.json")
+TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS = load_ospf_dict(
+    "nine_node_graph_with_asymmetric_costs.json"
+)
 
 
 def test_initialization():
@@ -239,7 +242,10 @@ def test_convert_full_subgraph_to_json():
                 "nn": "1",
                 "nn_int": 1,
                 "networks": {"router": [{"id": "10.69.0.2", "metric": 10}]},
-                "exit_path": ["10.69.0.1", "10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.1", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.1"],
+                },
                 "missing_edges": 0,
             },
             {
@@ -255,7 +261,10 @@ def test_convert_full_subgraph_to_json():
                         {"id": "0.0.0.0/0", "metric": 1},
                     ],
                 },
-                "exit_path": ["10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.2"],
+                    "return": ["10.69.0.2"],
+                },
                 "missing_edges": 0,
             },
             {
@@ -269,7 +278,10 @@ def test_convert_full_subgraph_to_json():
                         {"id": "10.70.0.4", "metric": 100},
                     ]
                 },
-                "exit_path": ["10.69.0.3", "10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.3", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.3"],
+                },
                 "missing_edges": 0,
             },
             {
@@ -283,7 +295,10 @@ def test_convert_full_subgraph_to_json():
                     ],
                     "external": [{"id": "0.0.0.0/0", "metric": 10000}],
                 },
-                "exit_path": ["10.70.0.4", "10.69.0.3", "10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.70.0.4", "10.69.0.3", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.3", "10.70.0.4"],
+                },
                 "missing_edges": 0,
             },
         ],
@@ -320,7 +335,10 @@ def test_convert_partial_subgraph_to_json():
                         {"id": "0.0.0.0/0", "metric": 1},
                     ],
                 },
-                "exit_path": ["10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.2"],
+                    "return": ["10.69.0.2"],
+                },
                 "missing_edges": 1,
             },
             {
@@ -334,7 +352,10 @@ def test_convert_partial_subgraph_to_json():
                         {"id": "10.70.0.4", "metric": 100},
                     ]
                 },
-                "exit_path": ["10.69.0.3", "10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.3", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.3"],
+                },
                 "missing_edges": 2,
             },
         ],
@@ -357,7 +378,10 @@ def test_get_neighbors_dict():
                 "nn": "1",
                 "nn_int": 1,
                 "networks": {"router": [{"id": "10.69.0.2", "metric": 10}]},
-                "exit_path": ["10.69.0.1", "10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.1", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.1"],
+                },
                 "missing_edges": 0,
             },
             {
@@ -373,7 +397,10 @@ def test_get_neighbors_dict():
                         {"id": "0.0.0.0/0", "metric": 1},
                     ],
                 },
-                "exit_path": ["10.69.0.2"],
+                "exit_paths": {
+                    "outbound": ["10.69.0.2"],
+                    "return": ["10.69.0.2"],
+                },
                 "missing_edges": 1,
             },
         ],
@@ -389,7 +416,7 @@ def test_multiple_exits():
     graph.update_link_data(TEST_NINE_NODE_GRAPH)
 
     output = graph._convert_subgraph_to_json(graph._graph)
-    exit_paths = {node["id"]: node["exit_path"] for node in output["nodes"]}
+    exit_paths = {node["id"]: node["exit_paths"]["outbound"] for node in output["nodes"]}
     assert exit_paths == {
         "10.69.0.1": ["10.69.0.1", "10.69.0.2"],
         "10.69.0.2": ["10.69.0.2"],
@@ -427,6 +454,102 @@ def test_multiple_exits():
     assert list(exit_tree_node_2.out_edges("10.69.0.3"))[0] == (
         "10.69.0.3",
         "10.69.0.2",
+    )
+    assert list(exit_tree_node_2.out_edges("10.69.0.4"))[0] == (
+        "10.69.0.4",
+        "10.69.0.3",
+    )
+    assert list(exit_tree_node_2.out_edges("10.69.0.5"))[0] == (
+        "10.69.0.5",
+        "10.69.0.1",
+    )
+    assert list(exit_tree_node_2.out_edges("10.69.0.9"))[0] == (
+        "10.69.0.9",
+        "10.69.0.1",
+    )
+
+    exit_tree_node_8 = egress_forest.subgraph(
+        nx.node_connected_component(egress_forest.to_undirected(), "10.69.0.8")
+    )
+    assert len(exit_tree_node_8.nodes) == 3 + 1  # Extra node for exit placeholder
+    assert len(exit_tree_node_8.edges) == 2 + 1  # Extra edge for exit placeholder
+
+    assert exit_tree_node_8.out_degree("10.69.0.6") == 1
+    assert exit_tree_node_8.out_degree("10.69.0.7") == 1
+    assert exit_tree_node_8.out_degree("10.69.0.8") == 1
+    assert exit_tree_node_8.out_degree("10.69.0.8_0.0.0.0/0") == 0
+
+    assert list(exit_tree_node_8.out_edges("10.69.0.6"))[0] == (
+        "10.69.0.6",
+        "10.69.0.7",
+    )
+    assert list(exit_tree_node_8.out_edges("10.69.0.7"))[0] == (
+        "10.69.0.7",
+        "10.69.0.8",
+    )
+    assert list(exit_tree_node_8.out_edges("10.69.0.8"))[0] == (
+        "10.69.0.8",
+        "10.69.0.8_0.0.0.0/0",
+    )
+
+
+def test_asymmetric():
+    graph = OSPFGraph(load_data=False)
+    graph.update_link_data(TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS)
+
+    output = graph._convert_subgraph_to_json(graph._graph)
+    outbound_paths = {node["id"]: node["exit_paths"]["outbound"] for node in output["nodes"]}
+    assert outbound_paths == {
+        "10.69.0.1": ["10.69.0.1", "10.69.0.2"],
+        "10.69.0.2": ["10.69.0.2"],
+        "10.69.0.3": ["10.69.0.3", "10.69.0.5", "10.69.0.1", "10.69.0.2"],
+        "10.69.0.4": ["10.69.0.4", "10.69.0.3", "10.69.0.5", "10.69.0.1", "10.69.0.2"],
+        "10.69.0.5": ["10.69.0.5", "10.69.0.1", "10.69.0.2"],
+        "10.69.0.6": ["10.69.0.6", "10.69.0.7", "10.69.0.8"],
+        "10.69.0.7": ["10.69.0.7", "10.69.0.8"],
+        "10.69.0.8": ["10.69.0.8"],
+        "10.69.0.9": ["10.69.0.9", "10.69.0.1", "10.69.0.2"],
+    }
+
+    return_paths = {node["id"]: node["exit_paths"]["return"] for node in output["nodes"]}
+    assert return_paths == {
+        "10.69.0.1": ["10.69.0.2", "10.69.0.1"],
+        "10.69.0.2": ["10.69.0.2"],
+        "10.69.0.3": ["10.69.0.2", "10.69.0.3"],
+        "10.69.0.4": ["10.69.0.2", "10.69.0.6", "10.69.0.7", "10.69.0.4"],
+        "10.69.0.5": ["10.69.0.2", "10.69.0.3", "10.69.0.5"],
+        "10.69.0.6": ["10.69.0.8", "10.69.0.7", "10.69.0.6"],
+        "10.69.0.7": ["10.69.0.8", "10.69.0.7"],
+        "10.69.0.8": ["10.69.0.8"],
+        "10.69.0.9": ["10.69.0.2", "10.69.0.1", "10.69.0.9"],
+    }
+    assert return_paths == graph._egress_return_paths
+
+    egress_forest = graph._compute_egress_forest()
+    assert nx.is_forest(egress_forest)
+    exit_tree_node_2 = egress_forest.subgraph(
+        nx.node_connected_component(egress_forest.to_undirected(), "10.69.0.2")
+    )
+    assert len(exit_tree_node_2.nodes) == 6 + 1  # Extra node for exit placeholder
+    assert len(exit_tree_node_2.edges) == 5 + 1  # Extra edge for exit placeholder
+
+    for node in exit_tree_node_2:
+        if node == "10.69.0.2_0.0.0.0/0":
+            assert exit_tree_node_2.out_degree(node) == 0
+        else:
+            assert exit_tree_node_2.out_degree(node) == 1
+
+    assert list(exit_tree_node_2.out_edges("10.69.0.1"))[0] == (
+        "10.69.0.1",
+        "10.69.0.2",
+    )
+    assert list(exit_tree_node_2.out_edges("10.69.0.2"))[0] == (
+        "10.69.0.2",
+        "10.69.0.2_0.0.0.0/0",
+    )
+    assert list(exit_tree_node_2.out_edges("10.69.0.3"))[0] == (
+        "10.69.0.3",
+        "10.69.0.5",
     )
     assert list(exit_tree_node_2.out_edges("10.69.0.4"))[0] == (
         "10.69.0.4",

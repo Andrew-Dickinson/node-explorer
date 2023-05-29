@@ -71,7 +71,7 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
   for (const node of graphData.nodes) {
     const classes = ["primaryNode"];
     if (node.id === selectedNode) classes.push("selected");
-    if (node.exit_path.length === 1) classes.push("exit");
+    if (node.exit_paths.outbound.length === 1) classes.push("exit");
     outputElements.push({
       data: { id: node.id, label: node.nn ?? node.id },
       classes: classes,

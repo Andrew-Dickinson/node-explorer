@@ -52,7 +52,7 @@ function SelectedNodeDetail(props) {
 
   const nn = nodeDetail?.nn ?? null;
   const nn_int = nodeDetail?.nn_int ?? null;
-  const exit_path = nodeDetail?.exit_path ?? [];
+  const exit_path = nodeDetail?.exit_paths?.outbound ?? [];
   const is_exit = exit_path.length === 1;
   const routerId = nodeDetail?.id ?? null;
 

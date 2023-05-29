@@ -60,6 +60,7 @@ class OSPFGraph:
         largest_connected = max(nx.connected_components(self._graph.to_undirected()), key=len)
         self._graph = self._graph.subgraph(largest_connected).copy()
         self._egress_forest = self._compute_egress_forest()
+        self._egress_return_paths = self._compute_egress_return_paths()
 
     def _drop_no_metadata_nodes(self):
         nodes_to_drop = [node for node in self._graph.nodes if node not in self.routers]
@@ -111,6 +112,8 @@ class OSPFGraph:
             graph_with_exit_placeholders,
             exit_placeholders,
         ) = self._create_graph_with_exit_placeholders()
+        graph_with_exit_placeholders = graph_with_exit_placeholders.reverse()
+
         paths = nx.algorithms.multi_source_dijkstra_path(
             graph_with_exit_placeholders, exit_placeholders
         )
@@ -122,6 +125,30 @@ class OSPFGraph:
         )
 
         return egress_forest
+
+    def _compute_egress_return_paths(self) -> Dict[str, List[str]]:
+        nodes_with_exit = [
+            node[0]
+            for node in self._graph.nodes.data()
+            if any(
+                network["id"] == "0.0.0.0/0"
+                for network in node[1].get("networks", {}).get("external", [])
+            )
+        ]
+
+        shortest_paths_by_exit_node = {
+            exit_node: nx.algorithms.single_source_dijkstra_path(self._graph, exit_node)
+            for exit_node in nodes_with_exit
+        }
+
+        egreess_return_paths = {}
+        for node in self._graph:
+            egress_path = self.get_exit_path_for_node(node)
+            exit_node_used = egress_path[-1]
+            egress_return_path = shortest_paths_by_exit_node[exit_node_used][node]
+            egreess_return_paths[node] = egress_return_path
+
+        return egreess_return_paths
 
     def _get_neighbors_subgraph(self, router_id: str, neighbor_depth: int = 1) -> nx.MultiDiGraph:
         node_set = {router_id}
@@ -145,7 +172,10 @@ class OSPFGraph:
                 "nn": None,
                 "nn_int": None,
                 "networks": node["networks"],
-                "exit_path": self.get_exit_path_for_node(node_id),
+                "exit_paths": {
+                    "outbound": self.get_exit_path_for_node(node_id),
+                    "return": self._egress_return_paths[node_id],
+                },
                 "missing_edges": sum(
                     1 for edge in self._graph.out_edges(node_id) if edge not in subgraph.edges
                 ),
