@@ -11,6 +11,8 @@ export default [
     selector: "node",
     style: {
       label: "data(label)",
+      "text-outline-color": "#eeeeee",
+      "text-outline-width": "2px",
     },
   },
   {
@@ -22,6 +24,8 @@ export default [
       "curve-style": "bezier",
       "font-size": "12pt",
       label: "data(label)",
+      "text-outline-color": "#eeeeee",
+      "text-outline-width": "1px",
     },
   },
   {
