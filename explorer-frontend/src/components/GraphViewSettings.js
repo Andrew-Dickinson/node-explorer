@@ -52,21 +52,15 @@ function GraphViewSettings(props) {
           </CardHeader>
           <CardBody>
             <FormGroup>
-              <Label>
-                How many links away should we search from the selected node?
-              </Label>
+              <Label>How many links away should we search from the selected node?</Label>
               <RangeSlider
                 id={"searchDistanceSlider"}
                 variant={settings.searchDistance > 1 ? "danger" : "primary"}
                 value={settings.searchDistance}
                 min={0}
                 max={2}
-                tooltipLabel={(val) =>
-                  val > 1 ? val + " - might be slow" : val
-                }
-                onChange={(e) =>
-                  onUpdate("searchDistance", parseInt(e.target.value))
-                }
+                tooltipLabel={(val) => (val > 1 ? val + " - might be slow" : val)}
+                onChange={(e) => onUpdate("searchDistance", parseInt(e.target.value))}
               />
             </FormGroup>
           </CardBody>
