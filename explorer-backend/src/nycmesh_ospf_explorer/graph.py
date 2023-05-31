@@ -67,10 +67,11 @@ class OSPFGraph:
         for node in nodes_to_drop:
             self._graph.remove_node(node)
 
-        print(
-            f"WARN: Dropped the following nodes {nodes_to_drop} becauase we didn't find router entries for them. "
-            f"However, they appeared as links from other nodes. Check OSPF DB consistency."
-        )
+        if nodes_to_drop:
+            print(
+                f"WARN: Dropped the following nodes {nodes_to_drop} becauase we didn't find router entries for them. "
+                f"However, they appeared as links from other nodes. Check OSPF DB consistency."
+            )
 
     def _create_graph_with_exit_placeholders(self) -> Tuple[nx.MultiDiGraph, Set[Tuple[str, dict]]]:
         graph_with_exit_placeholders: nx.MultiDiGraph = self._graph.copy()
