@@ -7,10 +7,8 @@ import { Alert, Col, Row } from "reactstrap";
 import GraphViewSettings from "./GraphViewSettings";
 import SelectedNodeDetail from "./SelectedNodeDetail";
 import JSONDataAccordion from "./JSONDataAccordion";
-import {
-  convertToCytoScapeElements,
-  getNodeDetails,
-} from "../lib/GraphHelpers";
+import { convertToCytoScapeElements, getNodeDetails } from "../lib/GraphHelpers";
+import { usePrevious } from "../lib/utils";
 
 cytoscape.use(euler);
 
@@ -97,11 +95,7 @@ function GraphView(props) {
       <Col className={"col-xxl-9 col-lg-8 col-xs-12"}>
         <CytoscapeComponent
           className={"rounded graph-view mb-3"}
-          elements={convertToCytoScapeElements(
-            graphData,
-            settings,
-            selectedNode
-          )}
+          elements={convertToCytoScapeElements(graphData, settings, selectedNode)}
           style={{ width: "100%", height: "35rem" }}
           stylesheet={CytoscapeStyles}
           layout={layoutProps}
@@ -116,12 +110,10 @@ function GraphView(props) {
               <Alert color={"info"}>
                 <h4>NB: OSPF data may be imperfect</h4>
                 <p>
-                  This tool pulls from the output of{" "}
-                  <code>birdc show ospf state</code> and may not be 100%
-                  accurate. It seems to be pretty good from experimentation but
-                  for critical decision making please double check the router
-                  configuration. Report any inconsistencies you notice so we can
-                  fix them!
+                  This tool pulls from the output of <code>birdc show ospf state</code> and may not
+                  be 100% accurate. It seems to be pretty good from experimentation but for critical
+                  decision making please double check the router configuration. Report any
+                  inconsistencies you notice so we can fix them!
                 </p>
               </Alert>
             </Col>

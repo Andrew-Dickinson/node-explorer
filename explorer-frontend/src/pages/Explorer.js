@@ -54,9 +54,7 @@ function Explorer() {
           <Col className={"col-xxl-9 col-lg-8"}>
             <Alert color={"danger"}>
               <h4>Could not fetch node graph for {urlState.router}</h4>
-              <p>
-                Please enter a different ip address / node number or try again
-              </p>
+              <p>Please enter a different ip address / node number or try again</p>
             </Alert>
           </Col>
         </Row>
