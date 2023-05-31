@@ -44,6 +44,15 @@ function GraphViewSettings(props) {
               />
               <Label check>Show both directions</Label>
             </FormGroup>
+            <FormGroup check>
+              <Input
+                id="includeEgress"
+                type="checkbox"
+                checked={settings.includeEgress}
+                onChange={(e) => onUpdate("includeEgress", e.target.checked)}
+              />
+              <Label check>Include all nodes along exit path</Label>
+            </FormGroup>
           </CardBody>
         </Card>
         <Card>

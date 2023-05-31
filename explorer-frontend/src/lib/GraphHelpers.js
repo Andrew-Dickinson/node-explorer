@@ -65,40 +65,66 @@ function computeEdgeCosts(edges) {
   return edgeCosts;
 }
 
-export function convertToCytoScapeElements(graphData, settings, selectedNode) {
+function isEdgeInPath(edge, path) {
+  const sourceEgressPosition = path.indexOf(edge[0]);
+  const targetEgressPosition = path.indexOf(edge[1]);
+
+  return (
+    targetEgressPosition - sourceEgressPosition === 1 &&
+    sourceEgressPosition !== -1 &&
+    targetEgressPosition !== -1
+  );
+}
+
+export function convertToCytoScapeElements(graphDataInput, settings, selectedNodeId) {
+  let graphData = structuredClone(graphDataInput);
   const outputElements = [];
   const edgeCosts = computeEdgeCosts(graphData.edges);
+  const includedNodeIds = [];
+
+  let selectedNode = null;
   for (const node of graphData.nodes) {
+    if (node.id === selectedNodeId) selectedNode = node;
+  }
+
+  const missingEdgeCounts = {};
+
+  for (const node of graphData.nodes) {
+    missingEdgeCounts[node.id] = node.missing_edges;
+    if (!settings.includeEgress && !node.in_neighbor_set) continue;
     const classes = ["primaryNode"];
     if (node.id === selectedNode) classes.push("selected");
     if (node.exit_paths.outbound.length === 1) classes.push("exit");
+    includedNodeIds.push(node.id);
     outputElements.push({
       data: { id: node.id, label: node.nn ?? node.id },
       classes: classes,
-      selected: node.id === selectedNode,
+      selected: node.id === selectedNodeId,
     });
-    if (node.missing_edges > 0) {
-      outputElements.push({
-        data: {
-          id: node.id + "_missing",
-          label: node.missing_edges + " more",
-        },
-        classes: ["invisibleNode"],
-      });
-      outputElements.push({
-        data: {
-          source: node.id,
-          target: node.id + "_missing",
-        },
-        classes: ["dashedEdge"],
-      });
-    }
   }
 
+  const egressOutboundPath = selectedNode?.exit_paths?.outbound ?? [];
+  const egressReturnPath = selectedNode?.exit_paths?.return ?? [];
+
+  let nodesWithHiddenEgressNeighbors = [];
   if (settings.lowestCostOnly) {
     for (const edgeId of Object.keys(edgeCosts)) {
       const nodes = edgeId.split("->");
       const invalid = edgeCosts[edgeId].invalid;
+      const reversedEdge = nodes.slice().reverse();
+
+      if (includedNodeIds.indexOf(nodes[0]) === -1 || includedNodeIds.indexOf(nodes[1]) === -1) {
+        missingEdgeCounts[nodes[0]] += 1;
+        missingEdgeCounts[nodes[1]] += 1;
+        if (includedNodeIds.indexOf(nodes[0]) !== -1 || includedNodeIds.indexOf(nodes[1]) !== -1) {
+          if (isEdgeInPath(nodes, egressOutboundPath) || isEdgeInPath(nodes, egressReturnPath)) {
+            nodesWithHiddenEgressNeighbors.push(
+              includedNodeIds.indexOf(nodes[1]) === -1 ? nodes[0] : nodes[1]
+            );
+          }
+        }
+        continue;
+      }
 
       const classes = [];
       if (settings.bothDirections) classes.push("directionalEdge");
@@ -110,13 +136,31 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
         label = "Mismatch";
       }
 
+      let primaryDirectionClasses = [];
+      const secondaryDirectionClasses = [];
+
+      if (isEdgeInPath(nodes, egressOutboundPath) || isEdgeInPath(nodes, egressReturnPath)) {
+        primaryDirectionClasses.push("egress");
+      }
+
+      if (
+        isEdgeInPath(reversedEdge, egressOutboundPath) ||
+        isEdgeInPath(reversedEdge, egressReturnPath)
+      ) {
+        secondaryDirectionClasses.push("egress");
+      }
+
+      if (!settings.bothDirections) {
+        primaryDirectionClasses = primaryDirectionClasses.concat(secondaryDirectionClasses);
+      }
+
       outputElements.push({
         data: {
           source: nodes[0],
           target: nodes[1],
           label: label,
         },
-        classes: classes,
+        classes: classes.concat(primaryDirectionClasses),
       });
 
       if (settings.bothDirections) {
@@ -127,20 +171,56 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
             target: nodes[0],
             label: label,
           },
-          classes: classes,
+          classes: classes.concat(secondaryDirectionClasses),
         });
       }
     }
   } else {
     for (const edge of graphData.edges) {
+      const costData = edgeCosts[computeNodePairId(edge)];
+
+      if (includedNodeIds.indexOf(edge.from) === -1 || includedNodeIds.indexOf(edge.to) === -1) {
+        if (costData.individualCosts[edge.from][0] === edge.weight) {
+          missingEdgeCounts[edge.from] += 1;
+          if (includedNodeIds.indexOf(edge.from) !== -1) {
+            if (
+              isEdgeInPath([edge.from, edge.to], egressOutboundPath) ||
+              isEdgeInPath([edge.from, edge.to], egressReturnPath) ||
+              isEdgeInPath([edge.to, edge.from], egressOutboundPath) ||
+              isEdgeInPath([edge.to, edge.from], egressReturnPath)
+            ) {
+              nodesWithHiddenEgressNeighbors.push(edge.from);
+            }
+          }
+        }
+        continue;
+      }
+
       if (settings.bothDirections || edge.from < edge.to) {
         const classes = [];
         if (settings.bothDirections) classes.push("directionalEdge");
-        if (edgeCosts[computeNodePairId(edge)].invalid) classes.push("invalidCosts");
+        if (costData.invalid) classes.push("invalidCosts");
 
         let label = edge.weight;
-        if (!settings.bothDirections && edgeCosts[computeNodePairId(edge)].invalid) {
+        if (!settings.bothDirections && costData.invalid) {
           label = "Mismatch";
+        }
+
+        if (costData.individualCosts[edge.from][0] === edge.weight) {
+          if (
+            isEdgeInPath([edge.from, edge.to], egressOutboundPath) ||
+            isEdgeInPath([edge.from, edge.to], egressReturnPath)
+          ) {
+            classes.push("egress");
+          }
+          if (!settings.bothDirections) {
+            if (
+              isEdgeInPath([edge.to, edge.from], egressOutboundPath) ||
+              isEdgeInPath([edge.to, edge.from], egressReturnPath)
+            ) {
+              classes.push("egress");
+            }
+          }
         }
 
         outputElements.push({
@@ -153,6 +233,30 @@ export function convertToCytoScapeElements(graphData, settings, selectedNode) {
           classes: classes,
         });
       }
+    }
+  }
+
+  for (const nodeId of Object.keys(missingEdgeCounts)) {
+    if (missingEdgeCounts[nodeId] > 0 && includedNodeIds.indexOf(nodeId) !== -1) {
+      const edgeClasses = ["dashedEdge"];
+      if (nodesWithHiddenEgressNeighbors.indexOf(nodeId) !== -1) {
+        edgeClasses.push("egress");
+        edgeClasses.push("directionalEdge");
+      }
+      outputElements.push({
+        data: {
+          id: nodeId + "_missing",
+          label: missingEdgeCounts[nodeId] + " more",
+        },
+        classes: ["invisibleNode"],
+      });
+      outputElements.push({
+        data: {
+          source: nodeId,
+          target: nodeId + "_missing",
+        },
+        classes: edgeClasses,
+      });
     }
   }
 

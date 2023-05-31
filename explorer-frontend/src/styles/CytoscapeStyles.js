@@ -65,6 +65,13 @@ export default [
     },
   },
   {
+    selector: ".egress",
+    style: {
+      "line-color": lightBlue,
+      "target-arrow-color": lightBlue,
+    },
+  },
+  {
     selector: ".invalidCosts",
     style: {
       color: red,

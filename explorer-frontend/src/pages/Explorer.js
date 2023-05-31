@@ -38,7 +38,7 @@ function Explorer() {
     setLoading(true);
     axios
       .get(NEIGHBORS_DATA_URL + urlState.router, {
-        params: { searchDistance: searchDistance },
+        params: { searchDistance: searchDistance, includeEgress: true },
       })
       .then((res) => {
         updateanalysisData(res.data);

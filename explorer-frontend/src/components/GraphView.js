@@ -26,7 +26,9 @@ function GraphView(props) {
     bothDirections: false,
     lowestCostOnly: true,
     searchDistance: searchDistance,
+    includeEgress: true,
   });
+  const previousSettings = usePrevious(settings);
 
   useEffect(() => {
     updateSearchDistance(settings.searchDistance);
@@ -46,12 +48,25 @@ function GraphView(props) {
 
   const [cyRef, updateCyRef] = useState(null);
 
-  useEffect(() => {
+  function refitGraph() {
     if (cyRef) {
       cyRef.layout(layoutProps).run();
       cyRef.fit();
     }
+  }
+
+  useEffect(() => {
+    refitGraph();
   }, [graphData, cyRef]);
+
+  useEffect(() => {
+    if (
+      previousSettings !== undefined &&
+      previousSettings.includeEgress !== settings.includeEgress
+    ) {
+      refitGraph();
+    }
+  }, [settings]);
 
   useEffect(() => {
     if (cyRef) {
