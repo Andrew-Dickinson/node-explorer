@@ -2,6 +2,7 @@ const black = "#000";
 const red = "#c02b12";
 const yellow = "#f1c102";
 const blue = "#036ad9";
+const lightBlue = "#7BB8FF";
 const lightGrey = "#ccc";
 const darkGrey = "#9f9f9f";
 
@@ -9,6 +10,17 @@ export default [
   {
     selector: "node",
     style: {
+      label: "data(label)",
+    },
+  },
+  {
+    selector: "edge",
+    style: {
+      width: 3,
+      "line-color": lightGrey,
+      "target-arrow-color": lightGrey,
+      "curve-style": "bezier",
+      "font-size": "12pt",
       label: "data(label)",
     },
   },
@@ -40,17 +52,6 @@ export default [
     selector: ".selected",
     style: {
       "background-color": blue,
-    },
-  },
-  {
-    selector: "edge",
-    style: {
-      width: 3,
-      "line-color": lightGrey,
-      "target-arrow-color": lightGrey,
-      "curve-style": "bezier",
-      "font-size": "12pt",
-      label: "data(label)",
     },
   },
   {
