@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import {
+  Accordion,
   AccordionBody,
   AccordionHeader,
   AccordionItem,
+  Badge,
   Card,
   CardHeader,
   CardLink,
@@ -17,6 +19,7 @@ import {
 import { ImExit, ImMap, ImLink } from "react-icons/im";
 import { TbChartDots3, TbListDetails, TbNetwork } from "react-icons/tb";
 import { FaNetworkWired } from "react-icons/fa";
+import { arraysEqual } from "../lib/utils";
 
 function ip2int(ip) {
   return (
@@ -40,12 +43,35 @@ function generateNetList(networks) {
   );
 }
 
+function generatePathList(path, onclick) {
+  return (
+    <ListGroup className={"mt-1"}>
+      {path.map((router_id) => (
+        <ListGroupItem
+          key={router_id}
+          tag="a"
+          href={"/explorer?router=" + router_id}
+          onClick={(e) => {
+            e.preventDefault();
+            onclick(router_id);
+          }}
+          className={"text-center"}
+        >
+          {router_id}
+        </ListGroupItem>
+      ))}
+    </ListGroup>
+  );
+}
+
 function SelectedNodeDetail(props) {
   const { nodeDetail, updateSelectedRouter } = props;
 
   const nn = nodeDetail?.nn ?? null;
   const nn_int = nodeDetail?.nn_int ?? null;
   const exit_path = nodeDetail?.exit_paths?.outbound ?? [];
+  const egress_return_path = nodeDetail?.exit_paths?.return ?? [];
+  const show_egress_return = !arraysEqual(egress_return_path.slice().reverse(), exit_path);
   const is_exit = exit_path.length === 1;
   const routerId = nodeDetail?.id ?? null;
 
@@ -72,6 +98,15 @@ function SelectedNodeDetail(props) {
     return 0;
   });
 
+  const [accordianState, updateAccordianState] = useState("-1");
+  const accordianToggle = (id) => {
+    if (accordianState === id) {
+      updateAccordianState();
+    } else {
+      updateAccordianState(id);
+    }
+  };
+
   return (
     <Row>
       <Col>
@@ -84,13 +119,20 @@ function SelectedNodeDetail(props) {
               <h6>OSPF Router ID: {routerId}</h6>
             </CardSubtitle>
           </CardHeader>
-          <UncontrolledAccordion defaultOpen={"-1"} flush>
+          <Accordion open={accordianState} toggle={accordianToggle} flush>
             <AccordionItem>
-              <AccordionHeader targetId="-1">
+              <AccordionHeader targetId="0">
                 <TbListDetails />
-                &nbsp;&nbsp;Node Details
+                <span className={"ms-1"}>Node Details</span>
+                {show_egress_return && accordianState !== "0" ? (
+                  <Badge className={"ms-1"} color={"danger"} pill>
+                    Path Mismatch
+                  </Badge>
+                ) : (
+                  ""
+                )}
               </AccordionHeader>
-              <AccordionBody accordionId="-1">
+              <AccordionBody accordionId="0">
                 <b>
                   <ImMap /> Map Link:{" "}
                 </b>
@@ -112,31 +154,41 @@ function SelectedNodeDetail(props) {
                 {is_exit ? `Yes (cost ${direct_exit_cost})` : "No"}
                 <br />
                 <b>
-                  <TbChartDots3 /> Exit Path:{" "}
+                  <TbChartDots3 /> Exit Path
+                  {show_egress_return ? (
+                    <Badge className={"ms-1"} color={"danger"} pill>
+                      Mismatch
+                    </Badge>
+                  ) : (
+                    ""
+                  )}
                 </b>
-                <ul className={"m-0"}>
-                  {exit_path.map((router_id) => (
-                    <li key={router_id}>
-                      <a
-                        href={"/explorer?router=" + router_id}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateSelectedRouter(router_id);
-                        }}
-                      >
-                        {router_id}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <Row>
+                  <Col>
+                    {show_egress_return ? (
+                      <h6 className={"text-center w-auto mb-0 fw-bold mt-1"}>Outbound</h6>
+                    ) : (
+                      ""
+                    )}
+                    {generatePathList(exit_path, updateSelectedRouter)}
+                  </Col>
+                  {show_egress_return ? (
+                    <Col>
+                      <h6 className={"text-center w-auto mb-0 fw-bold mt-1"}>Return</h6>
+                      {generatePathList(egress_return_path, updateSelectedRouter)}
+                    </Col>
+                  ) : (
+                    ""
+                  )}
+                </Row>
               </AccordionBody>
             </AccordionItem>
             <AccordionItem>
-              <AccordionHeader targetId="0">
+              <AccordionHeader targetId="1">
                 <ImLink />
                 &nbsp;&nbsp;Adjacent Routers ({routers.length ?? 0})
               </AccordionHeader>
-              <AccordionBody accordionId="0">
+              <AccordionBody accordionId="1">
                 <ListGroup>
                   {routers.map((router, i) => (
                     <ListGroupItem key={i}>
@@ -171,7 +223,7 @@ function SelectedNodeDetail(props) {
               </AccordionHeader>
               <AccordionBody accordionId="3">{generateNetList(external)}</AccordionBody>
             </AccordionItem>
-          </UncontrolledAccordion>
+          </Accordion>
         </Card>
       </Col>
     </Row>
