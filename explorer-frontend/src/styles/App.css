@@ -11,3 +11,7 @@
   color: #888888;
   font-style: italic;
 }
+
+a {
+  text-decoration: none !important;
+}
