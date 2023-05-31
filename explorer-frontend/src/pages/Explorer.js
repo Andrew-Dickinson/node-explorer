@@ -19,6 +19,7 @@ import {
 } from "reactstrap";
 import NodeSearchBar from "../components/NodeSearchBar";
 import useUrlState from "@ahooksjs/use-url-state";
+import { usePrevious } from "../lib/utils";
 
 JSONDataAccordion.propTypes = { data: PropTypes.shape({}) };
 
@@ -29,7 +30,10 @@ function Explorer() {
   const [error, setError] = useState(null);
   const [graphData, updateanalysisData] = useState({ nodes: [], edges: [] });
 
-  useEffect(() => {
+  const prevSearchDistance = usePrevious(searchDistance);
+  const prevUrlState = usePrevious(urlState);
+
+  function loadGraphData() {
     setError(null);
     setLoading(true);
     axios
@@ -44,7 +48,19 @@ function Explorer() {
         setLoading(false);
         setError("Err");
       });
-  }, [urlState, searchDistance]);
+  }
+
+  useEffect(loadGraphData, []);
+  useEffect(() => {
+    if (prevUrlState?.router !== undefined && prevUrlState?.router !== urlState.router) {
+      loadGraphData();
+    }
+  }, [urlState]);
+  useEffect(() => {
+    if (prevSearchDistance !== undefined && prevSearchDistance !== searchDistance) {
+      loadGraphData();
+    }
+  }, [searchDistance]);
 
   return (
     <>
