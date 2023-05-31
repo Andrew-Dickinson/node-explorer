@@ -152,6 +152,10 @@ class OSPFGraph:
         return egreess_return_paths
 
     def _get_neighbors_subgraph(self, router_id: str, neighbor_depth: int = 1) -> nx.MultiDiGraph:
+        neighbor_set = self._get_neighbors_set(router_id, neighbor_depth)
+        return self._graph.subgraph(neighbor_set).copy()
+
+    def _get_neighbors_set(self, router_id: str, neighbor_depth: int = 1) -> Set:
         node_set = {router_id}
         for i in range(neighbor_depth):
             new_nodes = set({})
@@ -161,9 +165,11 @@ class OSPFGraph:
 
             node_set = node_set.union(new_nodes)
 
-        return self._graph.subgraph(node_set).copy()
+        return node_set
 
-    def _convert_subgraph_to_json(self, subgraph: nx.MultiDiGraph) -> dict:
+    def _convert_subgraph_to_json(
+        self, subgraph: nx.MultiDiGraph, neighbor_set: Set = None
+    ) -> dict:
         output = {"nodes": [], "edges": []}
 
         for node_id in subgraph.nodes:
@@ -187,6 +193,9 @@ class OSPFGraph:
                 output_node["nn_int"] = compute_nn_from_ip(node_id)
             except ValueError:
                 pass
+
+            if neighbor_set:
+                output_node["in_neighbor_set"] = node_id in neighbor_set
 
             output["nodes"].append(output_node)
 
@@ -242,7 +251,15 @@ class OSPFGraph:
 
         return recurse_exit_path([router_id])[:-1]  # Remove the exit placeholder
 
-    def get_neighbors_dict(self, router_id: str, neighbor_depth: int = 1) -> dict:
-        return self._convert_subgraph_to_json(
-            self._get_neighbors_subgraph(router_id, neighbor_depth)
-        )
+    def get_neighbors_dict(
+        self, router_id: str, neighbor_depth: int = 1, include_egress=False
+    ) -> dict:
+        neighbor_set = self._get_neighbors_set(router_id, neighbor_depth)
+        nodes_to_include = neighbor_set
+
+        if include_egress:
+            egress_path_set = set(self.get_exit_path_for_node(router_id))
+            egress_return_path_set = set(self._egress_return_paths[router_id])
+            nodes_to_include = nodes_to_include | egress_path_set | egress_return_path_set
+
+        return self._convert_subgraph_to_json(self._graph.subgraph(nodes_to_include), neighbor_set)

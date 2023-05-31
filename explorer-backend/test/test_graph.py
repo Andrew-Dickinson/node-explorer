@@ -383,6 +383,7 @@ def test_get_neighbors_dict():
                     "return": ["10.69.0.2", "10.69.0.1"],
                 },
                 "missing_edges": 0,
+                "in_neighbor_set": True,
             },
             {
                 "id": "10.69.0.2",
@@ -402,11 +403,87 @@ def test_get_neighbors_dict():
                     "return": ["10.69.0.2"],
                 },
                 "missing_edges": 1,
+                "in_neighbor_set": True,
             },
         ],
         "edges": [
             {"from": "10.69.0.1", "to": "10.69.0.2", "weight": 10},
             {"from": "10.69.0.2", "to": "10.69.0.1", "weight": 10},
+        ],
+    }
+
+
+def test_get_neighbors_with_egress_path():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_FOUR_NODE_GRAPH)
+
+    assert graph.get_neighbors_dict("10.70.0.4", include_egress=True) == {
+        "nodes": [
+            {
+                "id": "10.69.0.2",
+                "nn": "2",
+                "nn_int": 2,
+                "networks": {
+                    "router": [
+                        {"id": "10.69.0.1", "metric": 10},
+                        {"id": "10.69.0.3", "metric": 100},
+                    ],
+                    "external": [
+                        {"id": "0.0.0.0/0", "metric": 1},
+                    ],
+                },
+                "exit_paths": {
+                    "outbound": ["10.69.0.2"],
+                    "return": ["10.69.0.2"],
+                },
+                "missing_edges": 1,
+                "in_neighbor_set": False,
+            },
+            {
+                "id": "10.69.0.3",
+                "nn": "3",
+                "nn_int": 3,
+                "networks": {
+                    "router": [
+                        {"id": "10.69.0.2", "metric": 100},
+                        {"id": "10.70.0.4", "metric": 10},
+                        {"id": "10.70.0.4", "metric": 100},
+                    ],
+                },
+                "exit_paths": {
+                    "outbound": ["10.69.0.3", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.3"],
+                },
+                "missing_edges": 0,
+                "in_neighbor_set": True,
+            },
+            {
+                "id": "10.70.0.4",
+                "nn": None,
+                "nn_int": None,
+                "networks": {
+                    "router": [
+                        {"id": "10.69.0.3", "metric": 10},
+                        {"id": "10.69.0.3", "metric": 100},
+                    ],
+                    "external": [{"id": "0.0.0.0/0", "metric": 10000}],
+                },
+                "exit_paths": {
+                    "outbound": ["10.70.0.4", "10.69.0.3", "10.69.0.2"],
+                    "return": ["10.69.0.2", "10.69.0.3", "10.70.0.4"],
+                },
+                "missing_edges": 0,
+                "in_neighbor_set": True,
+            },
+        ],
+        "edges": [
+            {"from": "10.69.0.2", "to": "10.69.0.3", "weight": 100},
+            {"from": "10.69.0.3", "to": "10.69.0.2", "weight": 100},
+            {"from": "10.69.0.3", "to": "10.70.0.4", "weight": 10},
+            {"from": "10.69.0.3", "to": "10.70.0.4", "weight": 100},
+            {"from": "10.70.0.4", "to": "10.69.0.3", "weight": 10},
+            {"from": "10.70.0.4", "to": "10.69.0.3", "weight": 100},
         ],
     }
 
