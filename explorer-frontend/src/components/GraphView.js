@@ -128,7 +128,8 @@ function GraphView(props) {
                   This tool pulls from the output of <code>birdc show ospf state</code> and may not
                   be 100% accurate. It seems to be pretty good from experimentation but for critical
                   decision making please double check the router configuration. Report any
-                  inconsistencies you notice so we can fix them!
+                  inconsistencies you notice to <b>@Andrew Dickinson</b> on slack so we can fix
+                  them!
                 </p>
               </Alert>
             </Col>
