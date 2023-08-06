@@ -103,8 +103,9 @@ export function convertToCytoScapeElements(graphDataInput, settings, selectedNod
     });
   }
 
-  const egressOutboundPath = selectedNode?.exit_paths?.outbound ?? [];
-  const egressReturnPath = selectedNode?.exit_paths?.return ?? [];
+  const egressOutboundPath =
+    selectedNode?.exit_paths?.outbound.map(([node_id, cost]) => node_id) ?? [];
+  const egressReturnPath = selectedNode?.exit_paths?.return.map(([node_id, cost]) => node_id) ?? [];
 
   let nodesWithHiddenEgressNeighbors = [];
   if (settings.lowestCostOnly) {

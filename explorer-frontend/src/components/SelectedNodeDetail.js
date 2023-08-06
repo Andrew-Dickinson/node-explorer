@@ -43,10 +43,10 @@ function generateNetList(networks) {
   );
 }
 
-function generatePathList(path, onclick) {
+function generatePathList(path, exit_network_cost, onclick) {
   return (
     <ListGroup className={"mt-1"}>
-      {path.map((router_id) => (
+      {path.map(([router_id, cost], i) => (
         <ListGroupItem key={router_id} href={"/explorer?router=" + router_id}>
           <CardLink
             href={"/explorer?router=" + router_id}
@@ -56,7 +56,13 @@ function generatePathList(path, onclick) {
             }}
           >
             <b>{router_id}</b>
-          </CardLink>
+          </CardLink>{" "}
+          {cost !== null ? <>Cost&nbsp;{cost}</> : <>Cost&nbsp;0 (self)</>}
+          {i === path.length - 1 && exit_network_cost !== null ? (
+            <> +&nbsp;{exit_network_cost}&nbsp;(to exit)</>
+          ) : (
+            ""
+          )}
         </ListGroupItem>
       ))}
     </ListGroup>
@@ -68,9 +74,29 @@ function SelectedNodeDetail(props) {
 
   const nn = nodeDetail?.nn ?? null;
   const nn_int = nodeDetail?.nn_int ?? null;
+
   const exit_path = nodeDetail?.exit_paths?.outbound ?? [];
   const egress_return_path = nodeDetail?.exit_paths?.return ?? [];
-  const show_egress_return = !arraysEqual(egress_return_path.slice().reverse(), exit_path);
+  const show_egress_return = !arraysEqual(
+    egress_return_path
+      .map(([node_id, cost]) => node_id)
+      .slice()
+      .reverse(),
+    exit_path.map(([node_id, cost]) => node_id)
+  );
+  const exit_network_cost = nodeDetail?.exit_network_cost ?? 0;
+
+  const exit_cost =
+    exit_path
+      .map(([node_id, cost]) => cost)
+      .filter((val) => val !== null)
+      .reduce((total, cur) => total + cur, 0) + exit_network_cost;
+
+  const egres_return_cost = egress_return_path
+    .map(([node_id, cost]) => cost)
+    .filter((val) => val !== null)
+    .reduce((total, cur) => total + cur, 0);
+
   const is_exit = exit_path.length === 1;
   const routerId = nodeDetail?.id ?? null;
 
@@ -161,22 +187,27 @@ function SelectedNodeDetail(props) {
                       </Badge>
                     </>
                   ) : (
-                    ""
+                    ` (Total Cost ${exit_cost})`
                   )}
                 </b>
                 <Row>
                   <Col>
                     {show_egress_return ? (
-                      <h6 className={"text-center w-auto mb-0 fw-bold mt-1"}>Outbound</h6>
+                      <h6 className={"text-center w-auto mb-0 fw-bold mt-1"}>
+                        Outbound (Cost&nbsp;{exit_cost})
+                      </h6>
                     ) : (
                       ""
                     )}
-                    {generatePathList(exit_path, updateSelectedRouter)}
+                    {generatePathList(exit_path, exit_network_cost, updateSelectedRouter)}
                   </Col>
                   {show_egress_return ? (
                     <Col>
-                      <h6 className={"text-center w-auto mb-0 fw-bold mt-1"}>Return</h6>
-                      {generatePathList(egress_return_path, updateSelectedRouter)}
+                      <h6 className={"text-center w-auto mb-0 fw-bold mt-1"}>
+                        Return <br className={"d-none d-xl-inline"} />
+                        (Cost&nbsp;{egres_return_cost})
+                      </h6>
+                      {generatePathList(egress_return_path, null, updateSelectedRouter)}
                     </Col>
                   ) : (
                     ""

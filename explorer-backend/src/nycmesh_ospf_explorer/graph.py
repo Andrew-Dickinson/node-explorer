@@ -119,11 +119,17 @@ class OSPFGraph:
             graph_with_exit_placeholders, exit_placeholders
         )
 
-        egress_forest = nx.DiGraph(
-            (node_id, egress_path[-2])
-            for node_id, egress_path in paths.items()
-            if len(egress_path) > 1
-        )
+        egress_forest = nx.DiGraph()
+        for node_id, egress_path in paths.items():
+            if len(egress_path) > 1:
+                egress_forest.add_edge(
+                    node_id,
+                    egress_path[-2],
+                    weight=min(
+                        edge[1]["weight"]
+                        for edge in graph_with_exit_placeholders[egress_path[-2]][node_id].items()
+                    ),
+                )
 
         return egress_forest
 
@@ -145,9 +151,13 @@ class OSPFGraph:
         egreess_return_paths = {}
         for node in self._graph:
             egress_path = self.get_exit_path_for_node(node)
-            exit_node_used = egress_path[-1]
+            exit_node_used = egress_path[-2][0]  # -1 is the exit placeholder, -2 is exit node
             egress_return_path = shortest_paths_by_exit_node[exit_node_used][node]
-            egreess_return_paths[node] = egress_return_path
+            egress_return_path_with_costs = [(egress_return_path[0], None)] + [
+                (node2, min(edge["weight"] for edge in self._graph[node1][node2].values()))
+                for node1, node2 in zip(egress_return_path, egress_return_path[1:])
+            ]
+            egreess_return_paths[node] = egress_return_path_with_costs
 
         return egreess_return_paths
 
@@ -174,14 +184,19 @@ class OSPFGraph:
 
         for node_id in subgraph.nodes:
             node = subgraph.nodes[node_id]
+
+            exit_path = self.get_exit_path_for_node(node_id)
+            return_path = self._egress_return_paths[node_id]
+
             output_node = {
                 "id": node_id,
                 "nn": None,
                 "nn_int": None,
                 "networks": node["networks"],
+                "exit_network_cost": exit_path[-1][1],
                 "exit_paths": {
-                    "outbound": self.get_exit_path_for_node(node_id),
-                    "return": self._egress_return_paths[node_id],
+                    "outbound": exit_path[:-1],
+                    "return": return_path,
                 },
                 "missing_edges": sum(
                     1 for edge in self._graph.out_edges(node_id) if edge not in subgraph.edges
@@ -237,19 +252,20 @@ class OSPFGraph:
 
     def get_exit_path_for_node(self, router_id: str) -> List[str]:
         def recurse_exit_path(current_path):
-            current_node = current_path[-1]
-            out_edges = list(self._egress_forest.out_edges(current_node))
+            current_node = current_path[-1][0]
+            out_edges = self._egress_forest[current_node].items()
 
             if len(out_edges) == 0:
                 # If there is nowhere else to go, this must be the exit
                 return current_path
 
-            next_node = out_edges[0][1]
-            current_path.append(next_node)
+            assert len(out_edges) == 1
+            next_node, edge_data = out_edges.__iter__().__next__()
+            current_path.append((next_node, edge_data["weight"]))
 
             return recurse_exit_path(current_path)
 
-        return recurse_exit_path([router_id])[:-1]  # Remove the exit placeholder
+        return recurse_exit_path([(router_id, None)])
 
     def get_neighbors_dict(
         self, router_id: str, neighbor_depth: int = 1, include_egress=False
@@ -258,8 +274,16 @@ class OSPFGraph:
         nodes_to_include = neighbor_set
 
         if include_egress:
-            egress_path_set = set(self.get_exit_path_for_node(router_id))
-            egress_return_path_set = set(self._egress_return_paths[router_id])
-            nodes_to_include = nodes_to_include | egress_path_set | egress_return_path_set
+            egress_path_nodes_without_exit_placeholder = set(
+                node_id for node_id, edge_cost in self.get_exit_path_for_node(router_id)[:-1]
+            )
+            egress_return_path_nodes = set(
+                node_id for node_id, edge_cost in self._egress_return_paths[router_id]
+            )
+            nodes_to_include = (
+                nodes_to_include
+                | egress_path_nodes_without_exit_placeholder
+                | egress_return_path_nodes
+            )
 
         return self._convert_subgraph_to_json(self._graph.subgraph(nodes_to_include), neighbor_set)
