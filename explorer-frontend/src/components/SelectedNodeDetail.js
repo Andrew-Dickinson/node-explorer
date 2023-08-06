@@ -47,17 +47,16 @@ function generatePathList(path, onclick) {
   return (
     <ListGroup className={"mt-1"}>
       {path.map((router_id) => (
-        <ListGroupItem
-          key={router_id}
-          tag="a"
-          href={"/explorer?router=" + router_id}
-          onClick={(e) => {
-            e.preventDefault();
-            onclick(router_id);
-          }}
-          className={"text-center"}
-        >
-          {router_id}
+        <ListGroupItem key={router_id} href={"/explorer?router=" + router_id}>
+          <CardLink
+            href={"/explorer?router=" + router_id}
+            onClick={(e) => {
+              e.preventDefault();
+              onclick(router_id);
+            }}
+          >
+            <b>{router_id}</b>
+          </CardLink>
         </ListGroupItem>
       ))}
     </ListGroup>
@@ -156,9 +155,11 @@ function SelectedNodeDetail(props) {
                 <b>
                   <TbChartDots3 /> Exit Path
                   {show_egress_return ? (
-                    <Badge className={"ms-1"} color={"danger"} pill>
-                      Mismatch
-                    </Badge>
+                    <>
+                      <Badge className={"ms-1"} color={"danger"} pill>
+                        Path Mismatch
+                      </Badge>
+                    </>
                   ) : (
                     ""
                   )}
