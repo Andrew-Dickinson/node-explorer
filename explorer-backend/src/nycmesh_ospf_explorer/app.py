@@ -28,12 +28,13 @@ def validate_nn(nn: str):
 @app.route("/neighbors/<router_id>", methods=["GET"])
 def get_neighbors(router_id):
     neighbor_depth = int(request.args.get("searchDistance", 1))
+    include_egress = request.args.get("includeEgress", "false") == "true"
 
     graph.update_if_needed()
     if not graph.contains_router(router_id):
         return str(f"Couldn't find router with ID: {router_id}"), 404
 
     return {
-        **graph.get_neighbors_dict(router_id, neighbor_depth),
+        **graph.get_neighbors_dict(router_id, neighbor_depth, include_egress=include_egress),
         "updated": int(graph.last_updated.timestamp()),
     }
