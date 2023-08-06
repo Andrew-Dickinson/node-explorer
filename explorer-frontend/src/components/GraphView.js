@@ -9,8 +9,27 @@ import SelectedNodeDetail from "./SelectedNodeDetail";
 import JSONDataAccordion from "./JSONDataAccordion";
 import { convertToCytoScapeElements, getNodeDetails } from "../lib/GraphHelpers";
 import { usePrevious } from "../lib/utils";
+import { LastUpdatedCard } from "./LastUpdatedCard";
 
 cytoscape.use(euler);
+
+function Disclaimer() {
+  return (
+    <Row>
+      <Col>
+        <Alert color={"info"}>
+          <h4>NB: OSPF data may be imperfect</h4>
+          <p>
+            This tool pulls from the output of <code>birdc show ospf state</code> and may not be
+            100% accurate. It seems to be pretty good from experimentation but for critical decision
+            making please double check the router configuration. Report any inconsistencies you
+            notice to <b>@Andrew Dickinson</b> on slack so we can fix them!
+          </p>
+        </Alert>
+      </Col>
+    </Row>
+  );
+}
 
 function GraphView(props) {
   const {
@@ -108,6 +127,9 @@ function GraphView(props) {
   return (
     <Row className={"gy-3"}>
       <Col className={"col-xxl-9 col-lg-8 col-xs-12"}>
+        <Col className={"mb-3 d-block d-lg-none"}>
+          <LastUpdatedCard updatedTime={graphData.updated} />
+        </Col>
         <CytoscapeComponent
           className={"rounded graph-view mb-3"}
           elements={convertToCytoScapeElements(graphData, settings, selectedNode)}
@@ -120,22 +142,7 @@ function GraphView(props) {
         />
         <div className={"d-none d-lg-block"}>
           <JSONDataAccordion data={graphData} />
-          {displayWarning ? (
-            <Row>
-              <Col>
-                <Alert color={"info"}>
-                  <h4>NB: OSPF data may be imperfect</h4>
-                  <p>
-                    This tool pulls from the output of <code>birdc show ospf state</code> and may
-                    not be 100% accurate. It seems to be pretty good from experimentation but for
-                    critical decision making please double check the router configuration. Report
-                    any inconsistencies you notice to <b>@Andrew Dickinson</b> on slack so we can
-                    fix them!
-                  </p>
-                </Alert>
-              </Col>
-            </Row>
-          ) : null}
+          {displayWarning ? <Disclaimer /> : null}
         </div>
       </Col>
       <Col className={"col-xxl-3 col-lg-4 mt-lg-3 col-12 mt-0"}>
@@ -144,6 +151,10 @@ function GraphView(props) {
           updateSelectedRouter={onNodeSelected}
         />
         <GraphViewSettings settings={settings} onUpdate={updateSetting} />
+        <div className={"mt-3 d-block d-lg-none"}>
+          <JSONDataAccordion data={graphData} />
+          {displayWarning ? <Disclaimer /> : null}
+        </div>
       </Col>
     </Row>
   );

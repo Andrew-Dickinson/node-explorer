@@ -15,6 +15,7 @@ import {
 import { BsClockFill, BsRouterFill } from "react-icons/bs";
 import moment from "moment";
 import { FaArrowAltCircleRight } from "react-icons/fa";
+import { LastUpdatedCard } from "./LastUpdatedCard";
 
 function NodeSearchBar(props) {
   const { routerId, updateRouterId, loading, updatedTime } = props;
@@ -53,9 +54,7 @@ function NodeSearchBar(props) {
         <InputGroup>
           <InputGroupText>
             <span className={"d-sm-none d-inline"}>IP Addr or NN</span>
-            <span className={"d-none d-sm-inline"}>
-              IP Address or Network Number
-            </span>
+            <span className={"d-none d-sm-inline"}>IP Address or Network Number</span>
           </InputGroupText>
           <Input
             type="text"
@@ -63,10 +62,7 @@ function NodeSearchBar(props) {
             value={textBoxContent}
             onChange={(e) => setTextBoxContent(e.target.value)}
             onKeyDown={(event) => {
-              if (
-                event.key === "Enter" &&
-                (isValidIpAddress() || isValidNN())
-              ) {
+              if (event.key === "Enter" && (isValidIpAddress() || isValidNN())) {
                 handleSubmit();
               }
             }}
@@ -78,10 +74,7 @@ function NodeSearchBar(props) {
           >
             {loading ? "Loading" : "Go to"}&nbsp;&nbsp;
             {loading ? (
-              <Spinner
-                role="status"
-                style={{ width: "0.8rem", height: "0.8rem" }}
-              />
+              <Spinner role="status" style={{ width: "0.8rem", height: "0.8rem" }} />
             ) : (
               <FaArrowAltCircleRight className={"shift-up"} />
             )}
@@ -89,18 +82,7 @@ function NodeSearchBar(props) {
         </InputGroup>
       </Col>
       <Col className={"d-none d-lg-block"}>
-        <Card>
-          <CardBody>
-            <CardText>
-              Last Updated{" "}
-              <i>
-                {updatedTime ? moment.unix(updatedTime).fromNow() : "Never"}
-                {"  "}
-              </i>
-              <BsClockFill className={"shift-up"}>Clock</BsClockFill>
-            </CardText>
-          </CardBody>
-        </Card>
+        <LastUpdatedCard updatedTime={updatedTime} />
       </Col>
     </Row>
   );
