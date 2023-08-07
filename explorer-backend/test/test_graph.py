@@ -553,7 +553,7 @@ def test_multiple_exits():
         "10.69.0.9": [("10.69.0.9", None), ("10.69.0.1", 10), ("10.69.0.2", 10)],
     }
 
-    egress_forest = graph._compute_egress_forest()
+    egress_forest = graph._compute_egress_forest(graph._graph)
     assert nx.is_forest(egress_forest)
     exit_tree_node_2 = egress_forest.subgraph(
         nx.node_connected_component(egress_forest.to_undirected(), "10.69.0.2")
@@ -660,7 +660,7 @@ def test_asymmetric():
     }
     assert return_paths == graph._egress_return_paths
 
-    egress_forest = graph._compute_egress_forest()
+    egress_forest = graph._compute_egress_forest(graph._graph)
     assert nx.is_forest(egress_forest)
     exit_tree_node_2 = egress_forest.subgraph(
         nx.node_connected_component(egress_forest.to_undirected(), "10.69.0.2")

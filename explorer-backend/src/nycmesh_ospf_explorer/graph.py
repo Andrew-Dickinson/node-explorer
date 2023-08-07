@@ -59,8 +59,10 @@ class OSPFGraph:
         # Get only the largest connected component
         largest_connected = max(nx.connected_components(self._graph.to_undirected()), key=len)
         self._graph = self._graph.subgraph(largest_connected).copy()
-        self._egress_forest = self._compute_egress_forest()
-        self._egress_return_paths = self._compute_egress_return_paths()
+        self._egress_forest = self._compute_egress_forest(self._graph)
+        self._egress_return_paths = self._compute_egress_return_paths(
+            self._graph, self._egress_forest
+        )
 
     def _drop_no_metadata_nodes(self):
         nodes_to_drop = [node for node in self._graph.nodes if node not in self.routers]
@@ -73,13 +75,16 @@ class OSPFGraph:
                 f"However, they appeared as links from other nodes. Check OSPF DB consistency."
             )
 
-    def _create_graph_with_exit_placeholders(self) -> Tuple[nx.MultiDiGraph, Set[Tuple[str, dict]]]:
-        graph_with_exit_placeholders: nx.MultiDiGraph = self._graph.copy()
+    @staticmethod
+    def _create_graph_with_exit_placeholders_from_graph(
+        graph: nx.MultiDiGraph,
+    ) -> Tuple[nx.MultiDiGraph, Set[Tuple[str, dict]]]:
+        graph_with_exit_placeholders: nx.MultiDiGraph = graph.copy()
 
         exit_placeholders = set()
         nodes_with_exit = [
             node
-            for node in self._graph.nodes.data()
+            for node in graph.nodes.data()
             if any(
                 network["id"] == "0.0.0.0/0"
                 for network in node[1].get("networks", {}).get("external", [])
@@ -108,11 +113,12 @@ class OSPFGraph:
 
         return graph_with_exit_placeholders, exit_placeholders
 
-    def _compute_egress_forest(self) -> nx.DiGraph:
+    @staticmethod
+    def _compute_egress_forest(graph: nx.MultiDiGraph) -> nx.DiGraph:
         (
             graph_with_exit_placeholders,
             exit_placeholders,
-        ) = self._create_graph_with_exit_placeholders()
+        ) = OSPFGraph._create_graph_with_exit_placeholders_from_graph(graph)
         graph_with_exit_placeholders = graph_with_exit_placeholders.reverse()
 
         paths = nx.algorithms.multi_source_dijkstra_path(
@@ -133,10 +139,14 @@ class OSPFGraph:
 
         return egress_forest
 
-    def _compute_egress_return_paths(self) -> Dict[str, List[Tuple[str, Optional[int]]]]:
+    @staticmethod
+    def _compute_egress_return_paths(
+        graph: nx.MultiDiGraph,
+        egress_forest: nx.DiGraph,
+    ) -> Dict[str, List[Tuple[str, Optional[int]]]]:
         nodes_with_exit = [
             node[0]
-            for node in self._graph.nodes.data()
+            for node in graph.nodes.data()
             if any(
                 network["id"] == "0.0.0.0/0"
                 for network in node[1].get("networks", {}).get("external", [])
@@ -144,17 +154,17 @@ class OSPFGraph:
         ]
 
         shortest_paths_by_exit_node = {
-            exit_node: nx.algorithms.single_source_dijkstra_path(self._graph, exit_node)
+            exit_node: nx.algorithms.single_source_dijkstra_path(graph, exit_node)
             for exit_node in nodes_with_exit
         }
 
         egreess_return_paths = {}
-        for node in self._graph:
-            egress_path = self.get_exit_path_for_node(node)
+        for node in graph:
+            egress_path = OSPFGraph._get_exit_path_for_node(egress_forest, node)
             exit_node_used = egress_path[-2][0]  # -1 is the exit placeholder, -2 is exit node
             egress_return_path = shortest_paths_by_exit_node[exit_node_used][node]
             egress_return_path_with_costs = [(egress_return_path[0], None)] + [
-                (node2, min(edge["weight"] for edge in self._graph[node1][node2].values()))
+                (node2, min(edge["weight"] for edge in graph[node1][node2].values()))
                 for node1, node2 in zip(egress_return_path, egress_return_path[1:])
             ]
             egreess_return_paths[node] = egress_return_path_with_costs
@@ -259,10 +269,11 @@ class OSPFGraph:
     def get_networks_for_node(self, router_id: str) -> dict:
         return self._graph.nodes[router_id]["networks"]
 
-    def get_exit_path_for_node(self, router_id: str) -> List[str]:
+    @staticmethod
+    def _get_exit_path_for_node(egress_forest: nx.DiGraph, router_id: str):
         def recurse_exit_path(current_path):
             current_node = current_path[-1][0]
-            out_edges = self._egress_forest[current_node].items()
+            out_edges = egress_forest[current_node].items()
 
             if len(out_edges) == 0:
                 # If there is nowhere else to go, this must be the exit
@@ -275,6 +286,9 @@ class OSPFGraph:
             return recurse_exit_path(current_path)
 
         return recurse_exit_path([(router_id, None)])
+
+    def get_exit_path_for_node(self, router_id: str) -> List[str]:
+        return self._get_exit_path_for_node(self._egress_forest, router_id)
 
     def get_neighbors_dict(
         self, router_id: str, neighbor_depth: int = 1, include_egress=False
