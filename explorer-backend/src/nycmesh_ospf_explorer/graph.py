@@ -1,6 +1,6 @@
 import datetime
 import os
-from typing import List, Tuple, Set, Dict
+from typing import List, Tuple, Set, Dict, Optional
 
 import networkx as nx
 import requests
@@ -133,7 +133,7 @@ class OSPFGraph:
 
         return egress_forest
 
-    def _compute_egress_return_paths(self) -> Dict[str, List[str]]:
+    def _compute_egress_return_paths(self) -> Dict[str, List[Tuple[str, Optional[int]]]]:
         nodes_with_exit = [
             node[0]
             for node in self._graph.nodes.data()
