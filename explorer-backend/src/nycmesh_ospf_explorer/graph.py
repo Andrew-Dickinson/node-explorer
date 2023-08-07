@@ -161,13 +161,16 @@ class OSPFGraph:
         egreess_return_paths = {}
         for node in graph:
             egress_path = OSPFGraph._get_exit_path_for_node(egress_forest, node)
-            exit_node_used = egress_path[-2][0]  # -1 is the exit placeholder, -2 is exit node
-            egress_return_path = shortest_paths_by_exit_node[exit_node_used][node]
-            egress_return_path_with_costs = [(egress_return_path[0], None)] + [
-                (node2, min(edge["weight"] for edge in graph[node1][node2].values()))
-                for node1, node2 in zip(egress_return_path, egress_return_path[1:])
-            ]
-            egreess_return_paths[node] = egress_return_path_with_costs
+            if egress_path is not None:
+                exit_node_used = egress_path[-2][0]  # -1 is the exit placeholder, -2 is exit node
+                egress_return_path = shortest_paths_by_exit_node[exit_node_used][node]
+                egress_return_path_with_costs = [(egress_return_path[0], None)] + [
+                    (node2, min(edge["weight"] for edge in graph[node1][node2].values()))
+                    for node1, node2 in zip(egress_return_path, egress_return_path[1:])
+                ]
+                egreess_return_paths[node] = egress_return_path_with_costs
+            else:
+                egreess_return_paths[node] = None
 
         return egreess_return_paths
 
@@ -271,6 +274,9 @@ class OSPFGraph:
 
     @staticmethod
     def _get_exit_path_for_node(egress_forest: nx.DiGraph, router_id: str):
+        if not router_id in egress_forest.nodes:
+            return None
+
         def recurse_exit_path(current_path):
             current_node = current_path[-1][0]
             out_edges = egress_forest[current_node].items()

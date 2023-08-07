@@ -535,6 +535,24 @@ def test_get_neighbors_with_egress_path():
     }
 
 
+def test_graph_with_isolated_node():
+    graph = OSPFGraph(load_data=False)
+    graph.update_link_data(TEST_NINE_NODE_GRAPH)
+
+    graph._graph.remove_node("10.69.0.1")
+    graph._egress_forest = graph._compute_egress_forest(graph._graph)
+    graph._egress_return_paths = graph._compute_egress_return_paths(
+        graph._graph, graph._egress_forest
+    )
+
+    assert graph.get_exit_path_for_node("10.69.0.9") is None
+    assert graph.get_exit_path_for_node("10.69.0.5")[:-1] == [
+        ("10.69.0.5", None),
+        ("10.69.0.3", 100),
+        ("10.69.0.2", 100),
+    ]
+
+
 def test_multiple_exits():
     graph = OSPFGraph(load_data=False)
     graph.update_link_data(TEST_NINE_NODE_GRAPH)
