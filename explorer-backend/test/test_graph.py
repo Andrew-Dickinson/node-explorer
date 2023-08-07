@@ -158,6 +158,62 @@ def test_get_edges():
     assert graph.get_edges_for_node_pair("10.69.0.7", "10.69.0.3") == []
 
 
+def test_get_dependent_nodes():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_NINE_NODE_GRAPH)
+
+    assert graph.get_dependent_nodes(["10.69.0.1"], []) == ({"10.69.0.5"}, {"10.69.0.9"})
+    assert graph.get_dependent_nodes([], [("10.69.0.1", "10.69.0.2")]) == (
+        {"10.69.0.1", "10.69.0.5", "10.69.0.9"},
+        set(),
+    )
+    assert graph.get_dependent_nodes([], [("10.69.0.2", "10.69.0.1")]) == (
+        {"10.69.0.1", "10.69.0.5", "10.69.0.9"},
+        set(),
+    )
+
+    assert graph.get_dependent_nodes([], [("10.69.0.4", "10.69.0.7")]) == (set(), set())
+    assert graph.get_dependent_nodes([], [("10.69.0.7", "10.69.0.4")]) == (set(), set())
+
+    assert graph.get_dependent_nodes(
+        [], [("10.69.0.4", "10.69.0.7"), ("10.69.0.6", "10.69.0.7")]
+    ) == (
+        {
+            "10.69.0.6",
+        },
+        set(),
+    )
+
+    assert graph.get_dependent_nodes(["10.69.0.3", "10.69.0.7"], []) == (
+        {"10.69.0.6"},
+        {"10.69.0.4"},
+    )
+
+
+def test_get_dependent_nodes_asymmetric():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS)
+
+    assert graph.get_dependent_nodes(["10.69.0.6"], []) == ({"10.69.0.4"}, set())
+
+    # Edge orientation does not matter, since an edge indicates complete failure of communication
+    # between two nodes on all interfaces
+    assert graph.get_dependent_nodes([], [("10.69.0.2", "10.69.0.6")]) == ({"10.69.0.4"}, set())
+    assert graph.get_dependent_nodes([], [("10.69.0.6", "10.69.0.2")]) == ({"10.69.0.4"}, set())
+
+    assert graph.get_dependent_nodes(
+        [], [("10.69.0.4", "10.69.0.7"), ("10.69.0.6", "10.69.0.7")]
+    ) == (
+        {
+            "10.69.0.4",
+            "10.69.0.6",
+        },
+        set(),
+    )
+
+
 def test_get_neighbors_simple():
     graph = OSPFGraph(load_data=False)
 

@@ -316,3 +316,81 @@ class OSPFGraph:
             )
 
         return self._convert_subgraph_to_json(self._graph.subgraph(nodes_to_include), neighbor_set)
+
+    @staticmethod
+    def _get_upstream_nodes(forest: nx.DiGraph, node) -> Set[str]:
+        upstream_nodes = set()
+        for n in forest.pred[node]:
+            upstream_nodes.add(n)
+            upstream_nodes = upstream_nodes.union(OSPFGraph._get_upstream_nodes(forest, n))
+
+        return upstream_nodes
+
+    def _get_graph_without_nodes_and_edges(
+        self, nodes: List[str], edges: List[Tuple[str, str]]
+    ) -> nx.MultiDiGraph:
+        modified_graph: nx.MultiDiGraph = self._graph.copy()
+
+        for node in nodes:
+            modified_graph.remove_node(node)
+
+        for edge in edges:
+            # Ensure we remove all edges, since there could be more than one for each direction
+            for i in range(len(modified_graph[edge[0]][edge[1]])):
+                modified_graph.remove_edge(edge[0], edge[1])
+            for i in range(len(modified_graph[edge[1]][edge[0]])):
+                modified_graph.remove_edge(edge[1], edge[0])
+
+        return modified_graph
+
+    def get_dependent_nodes(
+        self, nodes: List[str], edges: List[Tuple[str, str]]
+    ) -> Tuple[Set[str], Set[str]]:
+        """
+        Compute partially and fully dependent nodes of the union of the input node and edge lists
+
+        Input edges are not processed according to the traffic they carry, but rather the pair of
+        nodes they connect. That is, the direction of the edges specified doesn't matter, nor does
+        the selection of a specific edge when dealing with multi-edge scenarios. All edges directly
+        connecting the pair of nodes will be considered, even if only a single edge is provided
+        """
+        dependent_nodes = set({})
+        for node in nodes:
+            dependent_nodes = dependent_nodes.union(
+                self._get_upstream_nodes(self._egress_forest, node)
+            )
+
+        for edge in edges:
+            if self._egress_forest.has_edge(edge[0], edge[1]):
+                dependent_nodes = dependent_nodes.union(
+                    self._get_upstream_nodes(self._egress_forest, edge[0])
+                )
+            if self._egress_forest.has_edge(edge[1], edge[0]):
+                dependent_nodes = dependent_nodes.union(
+                    self._get_upstream_nodes(self._egress_forest, edge[1])
+                )
+
+        for candidate_dependent_node, egress_return_path in self._egress_return_paths.items():
+            egress_path_nodes_only = [egress_node for egress_node, _ in egress_return_path]
+            for egress_node in egress_path_nodes_only:
+                for dropped_node in nodes:
+                    if egress_node == dropped_node and candidate_dependent_node != dropped_node:
+                        dependent_nodes.add(candidate_dependent_node)
+
+            for egress_node1, egress_node2 in zip(
+                egress_path_nodes_only, egress_path_nodes_only[1:]
+            ):
+                for dropped_edge in edges:
+                    if set(dropped_edge) == {egress_node1, egress_node2}:
+                        dependent_nodes.add(candidate_dependent_node)
+
+        new_egress_forest = self._compute_egress_forest(
+            self._get_graph_without_nodes_and_edges(nodes, edges)
+        )
+
+        partially_dependent_nodes: set[str] = {
+            node for node in dependent_nodes if node in new_egress_forest.nodes
+        }
+        fully_dependent_nodes: set[str] = dependent_nodes.difference(partially_dependent_nodes)
+
+        return partially_dependent_nodes, fully_dependent_nodes
