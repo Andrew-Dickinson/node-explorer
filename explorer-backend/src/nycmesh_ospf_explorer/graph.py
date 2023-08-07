@@ -247,6 +247,15 @@ class OSPFGraph:
     def contains_router(self, router_id: str):
         return router_id in self._graph
 
+    def get_edges_for_node_pair(self, router1_id: str, router2_id: str):
+        try:
+            return [
+                {"from": router1_id, "to": router2_id, **edge_props}
+                for edge_props in self._graph[router1_id][router2_id].values()
+            ]
+        except KeyError:
+            return []
+
     def get_networks_for_node(self, router_id: str) -> dict:
         return self._graph.nodes[router_id]["networks"]
 

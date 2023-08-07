@@ -38,3 +38,23 @@ def get_neighbors(router_id):
         **graph.get_neighbors_dict(router_id, neighbor_depth, include_egress=include_egress),
         "updated": int(graph.last_updated.timestamp()),
     }
+
+
+@app.route("/edges/<router1_id>/<router2_id>", methods=["GET"])
+def get_edges(router1_id, router2_id):
+    graph.update_if_needed()
+    for router_id in [router1_id, router2_id]:
+        if not graph.contains_router(router_id):
+            return str(f"Couldn't find router with ID: {router_id}"), 404
+
+    if router1_id == router2_id:
+        return str(f"Self loops don't exist"), 404
+
+    edges = graph.get_edges_for_node_pair(router1_id, router2_id)
+    if len(edges) == 0:
+        return str(f"Couldn't find edge connecting routers: {router1_id} & {router2_id}"), 404
+
+    return {
+        "edges": edges,
+        "updated": int(graph.last_updated.timestamp()),
+    }

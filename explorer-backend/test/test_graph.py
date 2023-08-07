@@ -122,6 +122,42 @@ def test_contains_node():
     assert graph.contains_router("zzz") == False
 
 
+def test_get_edges():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS)
+
+    assert graph.get_edges_for_node_pair("10.69.0.1", "10.69.0.2") == [
+        {"from": "10.69.0.1", "to": "10.69.0.2", "weight": 10}
+    ]
+
+    assert graph.get_edges_for_node_pair("10.69.0.2", "10.69.0.1") == [
+        {"from": "10.69.0.2", "to": "10.69.0.1", "weight": 10}
+    ]
+
+    assert graph.get_edges_for_node_pair("10.69.0.1", "10.69.0.5") == [
+        {"from": "10.69.0.1", "to": "10.69.0.5", "weight": 10},
+        {"from": "10.69.0.1", "to": "10.69.0.5", "weight": 100},
+    ]
+
+    assert graph.get_edges_for_node_pair("10.69.0.5", "10.69.0.1") == [
+        {"from": "10.69.0.5", "to": "10.69.0.1", "weight": 10},
+        {"from": "10.69.0.5", "to": "10.69.0.1", "weight": 100},
+    ]
+
+    assert graph.get_edges_for_node_pair("10.69.0.3", "10.69.0.2") == [
+        {"from": "10.69.0.3", "to": "10.69.0.2", "weight": 100}
+    ]
+
+    assert graph.get_edges_for_node_pair("10.69.0.2", "10.69.0.3") == [
+        {"from": "10.69.0.2", "to": "10.69.0.3", "weight": 5}
+    ]
+
+    assert graph.get_edges_for_node_pair("10.69.0.3", "10.69.0.7") == []
+
+    assert graph.get_edges_for_node_pair("10.69.0.7", "10.69.0.3") == []
+
+
 def test_get_neighbors_simple():
     graph = OSPFGraph(load_data=False)
 
