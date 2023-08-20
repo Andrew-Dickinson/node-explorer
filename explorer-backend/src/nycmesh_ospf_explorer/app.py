@@ -40,6 +40,41 @@ def get_neighbors(router_id):
     }
 
 
+@app.route("/simulate-outage", methods=["GET"])
+def simulate_outage():
+    graph.update_if_needed()
+
+    nodes_param = request.args.get("nodes", "")
+    edges_param = request.args.get("edges", "")
+
+    nodes = nodes_param.split(",") if nodes_param else []
+    edges = [edge_str.split("->") for edge_str in edges_param.split(",")] if edges_param else []
+
+    if not nodes and not edges:
+        return str("Must provide at least one of: edges, nodes"), 400
+
+    for node in nodes:
+        if not graph.contains_router(node):
+            return str(f"Couldn't find router with ID: {node}"), 400
+
+    for edge in edges:
+        for router_id in edge:
+            if not graph.contains_router(router_id):
+                return str(f"Couldn't find router with ID: {router_id}"), 400
+
+        if edge[0] == edge[1]:
+            return str(f"Self loops don't exist"), 400
+
+        graph_edges = graph.get_edges_for_node_pair(edge[0], edge[1])
+        if len(graph_edges) == 0:
+            return str(f"Couldn't find edge connecting routers: {edge[0]} & {edge[1]}"), 400
+
+    return {
+        **graph.simulate_outage(nodes, edges),
+        "updated": int(graph.last_updated.timestamp()),
+    }
+
+
 @app.route("/edges/<router1_id>/<router2_id>", methods=["GET"])
 def get_edges(router1_id, router2_id):
     graph.update_if_needed()

@@ -411,3 +411,82 @@ class OSPFGraph:
         fully_dependent_nodes: set[str] = dependent_nodes.difference(partially_dependent_nodes)
 
         return partially_dependent_nodes, fully_dependent_nodes
+
+    def simulate_outage(self, nodes: List[str], edges: List[Tuple[str, str]]) -> dict:
+        nodes_of_removed_edges = set()
+        for edge in edges:
+            nodes_of_removed_edges.add(edge[0])
+            nodes_of_removed_edges.add(edge[1])
+
+        partially_dependent_nodes, fully_dependent_nodes = self.get_dependent_nodes(nodes, edges)
+
+        # It's not crazy efficient to do this a second time, but it makes the code simpler sooooo...
+        modified_graph = self._get_graph_without_nodes_and_edges(nodes, edges)
+
+        modified_egress_forest = self._compute_egress_forest(modified_graph)
+        modified_egress_return_paths = self._compute_egress_return_paths(
+            modified_graph, modified_egress_forest
+        )
+
+        nodes_to_include_egress_paths_for = (
+            partially_dependent_nodes | fully_dependent_nodes | nodes_of_removed_edges
+        )
+        nodes_to_display = nodes_to_include_egress_paths_for.copy()
+
+        # Add in egress path nodes to the nodes_to_display
+        for router_id in nodes_to_include_egress_paths_for:
+            egress_outbound_path = self._get_exit_path_for_node(modified_egress_forest, router_id)
+            try:
+                egress_return_path = modified_egress_return_paths[router_id]
+            except KeyError:
+                egress_return_path = None
+
+            for egress_path_half in [egress_outbound_path, egress_return_path]:
+                # If the node is now isolated, there might be no path
+                if egress_path_half:
+                    nodes_to_display |= set(node_id for node_id, edge_cost in egress_path_half)
+
+        impacted_subgraph = self._convert_subgraph_to_json(
+            modified_graph.subgraph(nodes_to_display),
+            whole_graph=modified_graph,
+            egress_forest=modified_egress_forest,
+            egress_return_paths=modified_egress_return_paths,
+            include_networks=False,
+        )
+
+        all_removed_edges = edges.copy()
+        for node in nodes:
+            for other_node in set(self._graph[node]):
+                if other_node in nodes_to_display:
+                    all_removed_edges.append((node, other_node))
+
+        for edge in sorted(list(all_removed_edges)):
+            impacted_subgraph["edges"].append({"from": edge[0], "to": edge[1], "weight": None})
+            impacted_subgraph["edges"].append({"from": edge[1], "to": edge[0], "weight": None})
+
+        for node in nodes:
+            removed_node = {
+                "exit_network_cost": None,
+                "exit_paths": {"outbound": None, "return": None},
+                "id": node,
+                "missing_edges": 0,
+                "nn": None,
+                "nn_int": None,
+            }
+
+            try:
+                removed_node["nn"] = compute_nn_string_from_ip(node)
+                removed_node["nn_int"] = compute_nn_from_ip(node)
+            except ValueError:
+                pass
+
+            impacted_subgraph["nodes"].append(removed_node)
+
+        return {
+            **impacted_subgraph,
+            "outage_lists": {
+                "removed": sorted(list(nodes)),
+                "offline": sorted(list(fully_dependent_nodes)),
+                "rerouted": sorted(list(partially_dependent_nodes)),
+            },
+        }

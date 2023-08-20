@@ -20,6 +20,7 @@ def load_ospf_dict(graph_fname: str):
 
 
 TEST_FOUR_NODE_GRAPH = load_ospf_dict("four_node_graph.json")
+TEST_THREE_NODE_GRAPH = load_ospf_dict("three_node_graph.json")
 TEST_THREE_NODE_GRAPH_WITH_METADATA = load_ospf_dict("three_node_graph_with_metadata.json")
 TEST_NINE_NODE_GRAPH = load_ospf_dict("nine_node_graph.json")
 TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS = load_ospf_dict(
@@ -640,6 +641,222 @@ def test_get_neighbors_with_egress_path():
             {"from": "10.70.0.4", "to": "10.69.0.3", "weight": 10},
             {"from": "10.70.0.4", "to": "10.69.0.3", "weight": 100},
         ],
+    }
+
+
+def test_simulated_node_outage():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_NINE_NODE_GRAPH)
+
+    assert graph.simulate_outage(["10.69.0.1"], []) == {
+        "nodes": [
+            {
+                "id": "10.69.0.2",
+                "nn": "2",
+                "nn_int": 2,
+                "exit_network_cost": 1,
+                "exit_paths": {"outbound": [("10.69.0.2", None)], "return": [("10.69.0.2", None)]},
+                "missing_edges": 1,
+            },
+            {
+                "id": "10.69.0.5",
+                "nn": "5",
+                "nn_int": 5,
+                "exit_network_cost": 1,
+                "exit_paths": {
+                    "outbound": [("10.69.0.5", None), ("10.69.0.3", 100), ("10.69.0.2", 100)],
+                    "return": [("10.69.0.2", None), ("10.69.0.3", 100), ("10.69.0.5", 100)],
+                },
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.69.0.9",
+                "nn": "9",
+                "nn_int": 9,
+                "exit_network_cost": None,
+                "exit_paths": {"outbound": None, "return": None},
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.69.0.3",
+                "nn": "3",
+                "nn_int": 3,
+                "exit_network_cost": 1,
+                "exit_paths": {
+                    "outbound": [("10.69.0.3", None), ("10.69.0.2", 100)],
+                    "return": [("10.69.0.2", None), ("10.69.0.3", 100)],
+                },
+                "missing_edges": 2,
+            },
+            {
+                "id": "10.69.0.1",
+                "nn": "1",
+                "nn_int": 1,
+                "exit_network_cost": None,
+                "exit_paths": {"outbound": None, "return": None},
+                "missing_edges": 0,
+            },
+        ],
+        "edges": [
+            {"from": "10.69.0.2", "to": "10.69.0.3", "weight": 100},
+            {"from": "10.69.0.5", "to": "10.69.0.3", "weight": 100},
+            {"from": "10.69.0.3", "to": "10.69.0.2", "weight": 100},
+            {"from": "10.69.0.3", "to": "10.69.0.5", "weight": 100},
+            {"from": "10.69.0.1", "to": "10.69.0.2", "weight": None},
+            {"from": "10.69.0.2", "to": "10.69.0.1", "weight": None},
+            {"from": "10.69.0.1", "to": "10.69.0.5", "weight": None},
+            {"from": "10.69.0.5", "to": "10.69.0.1", "weight": None},
+            {"from": "10.69.0.1", "to": "10.69.0.9", "weight": None},
+            {"from": "10.69.0.9", "to": "10.69.0.1", "weight": None},
+        ],
+        "outage_lists": {
+            "offline": ["10.69.0.9"],
+            "removed": ["10.69.0.1"],
+            "rerouted": ["10.69.0.5"],
+        },
+    }
+
+
+def test_simulated_node_outage_on_lone_branch():
+    graph = OSPFGraph(load_data=False)
+    graph.update_link_data(TEST_THREE_NODE_GRAPH)
+
+    assert graph.simulate_outage(["10.69.0.2"], []) == {
+        "nodes": [
+            {
+                "id": "10.69.0.3",
+                "nn": "3",
+                "nn_int": 3,
+                "exit_network_cost": None,
+                "exit_paths": {
+                    "outbound": None,
+                    "return": None,
+                },
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.69.0.2",
+                "nn": "2",
+                "nn_int": 2,
+                "exit_network_cost": None,
+                "exit_paths": {"outbound": None, "return": None},
+                "missing_edges": 0,
+            },
+        ],
+        "edges": [
+            {"from": "10.69.0.2", "to": "10.69.0.3", "weight": None},
+            {"from": "10.69.0.3", "to": "10.69.0.2", "weight": None},
+        ],
+        "outage_lists": {
+            "offline": ["10.69.0.3"],
+            "removed": ["10.69.0.2"],
+            "rerouted": [],
+        },
+    }
+
+
+def test_simulated_edge_outage():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_NINE_NODE_GRAPH)
+
+    assert graph.simulate_outage([], [("10.69.0.1", "10.69.0.2")]) == {
+        "nodes": [
+            {
+                "id": "10.69.0.1",
+                "nn": "1",
+                "nn_int": 1,
+                "exit_network_cost": 1,
+                "exit_paths": {
+                    "outbound": [
+                        ("10.69.0.1", None),
+                        ("10.69.0.5", 10),
+                        ("10.69.0.3", 100),
+                        ("10.69.0.2", 100),
+                    ],
+                    "return": [
+                        ("10.69.0.2", None),
+                        ("10.69.0.3", 100),
+                        ("10.69.0.5", 100),
+                        ("10.69.0.1", 10),
+                    ],
+                },
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.69.0.2",
+                "nn": "2",
+                "nn_int": 2,
+                "exit_network_cost": 1,
+                "exit_paths": {"outbound": [("10.69.0.2", None)], "return": [("10.69.0.2", None)]},
+                "missing_edges": 1,
+            },
+            {
+                "id": "10.69.0.5",
+                "nn": "5",
+                "nn_int": 5,
+                "exit_network_cost": 1,
+                "exit_paths": {
+                    "outbound": [("10.69.0.5", None), ("10.69.0.3", 100), ("10.69.0.2", 100)],
+                    "return": [("10.69.0.2", None), ("10.69.0.3", 100), ("10.69.0.5", 100)],
+                },
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.69.0.9",
+                "nn": "9",
+                "nn_int": 9,
+                "exit_network_cost": 1,
+                "exit_paths": {
+                    "outbound": [
+                        ("10.69.0.9", None),
+                        ("10.69.0.1", 10),
+                        ("10.69.0.5", 10),
+                        ("10.69.0.3", 100),
+                        ("10.69.0.2", 100),
+                    ],
+                    "return": [
+                        ("10.69.0.2", None),
+                        ("10.69.0.3", 100),
+                        ("10.69.0.5", 100),
+                        ("10.69.0.1", 10),
+                        ("10.69.0.9", 10),
+                    ],
+                },
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.69.0.3",
+                "nn": "3",
+                "nn_int": 3,
+                "exit_network_cost": 1,
+                "exit_paths": {
+                    "outbound": [("10.69.0.3", None), ("10.69.0.2", 100)],
+                    "return": [("10.69.0.2", None), ("10.69.0.3", 100)],
+                },
+                "missing_edges": 2,
+            },
+        ],
+        "edges": [
+            {"from": "10.69.0.1", "to": "10.69.0.5", "weight": 10},
+            {"from": "10.69.0.1", "to": "10.69.0.5", "weight": 100},
+            {"from": "10.69.0.1", "to": "10.69.0.9", "weight": 10},
+            {"from": "10.69.0.2", "to": "10.69.0.3", "weight": 100},
+            {"from": "10.69.0.5", "to": "10.69.0.1", "weight": 10},
+            {"from": "10.69.0.5", "to": "10.69.0.1", "weight": 100},
+            {"from": "10.69.0.5", "to": "10.69.0.3", "weight": 100},
+            {"from": "10.69.0.9", "to": "10.69.0.1", "weight": 10},
+            {"from": "10.69.0.3", "to": "10.69.0.2", "weight": 100},
+            {"from": "10.69.0.3", "to": "10.69.0.5", "weight": 100},
+            {"from": "10.69.0.1", "to": "10.69.0.2", "weight": None},
+            {"from": "10.69.0.2", "to": "10.69.0.1", "weight": None},
+        ],
+        "outage_lists": {
+            "offline": [],
+            "removed": [],
+            "rerouted": ["10.69.0.1", "10.69.0.5", "10.69.0.9"],
+        },
     }
 
 
