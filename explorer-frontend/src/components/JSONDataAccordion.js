@@ -10,7 +10,8 @@ import { CopyBlock, dracula } from "react-code-blocks";
 import React from "react";
 import { GrDocumentText } from "react-icons/gr";
 
-function JSONDataAccordion(data) {
+function JSONDataAccordion(props) {
+  const { data } = props;
   return (
     <Row className={"mb-3"}>
       <Col>
