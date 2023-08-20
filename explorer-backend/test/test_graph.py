@@ -464,6 +464,58 @@ def test_convert_partial_subgraph_to_json():
     }
 
 
+def test_convert_partial_subgraph_of_mutated_graph_to_json():
+    graph = OSPFGraph(load_data=False)
+
+    graph.update_link_data(TEST_FOUR_NODE_GRAPH)
+
+    modified_graph = graph._graph.copy()
+    modified_graph.remove_node("10.69.0.2")
+
+    modified_egress_forest = OSPFGraph._compute_egress_forest(modified_graph)
+
+    assert graph._convert_subgraph_to_json(
+        modified_graph.subgraph(["10.69.0.3", "10.70.0.4"]),
+        whole_graph=modified_graph,
+        egress_forest=modified_egress_forest,
+        egress_return_paths=OSPFGraph._compute_egress_return_paths(
+            modified_graph, modified_egress_forest
+        ),
+        include_networks=False,
+    ) == {
+        "nodes": [
+            {
+                "id": "10.69.0.3",
+                "nn": "3",
+                "nn_int": 3,
+                "exit_network_cost": 10000,
+                "exit_paths": {
+                    "outbound": [("10.69.0.3", None), ("10.70.0.4", 10)],
+                    "return": [("10.70.0.4", None), ("10.69.0.3", 10)],
+                },
+                "missing_edges": 0,
+            },
+            {
+                "id": "10.70.0.4",
+                "nn": None,
+                "nn_int": None,
+                "exit_network_cost": 10000,
+                "exit_paths": {
+                    "outbound": [("10.70.0.4", None)],
+                    "return": [("10.70.0.4", None)],
+                },
+                "missing_edges": 0,
+            },
+        ],
+        "edges": [
+            {"from": "10.69.0.3", "to": "10.70.0.4", "weight": 10},
+            {"from": "10.69.0.3", "to": "10.70.0.4", "weight": 100},
+            {"from": "10.70.0.4", "to": "10.69.0.3", "weight": 10},
+            {"from": "10.70.0.4", "to": "10.69.0.3", "weight": 100},
+        ],
+    }
+
+
 def test_get_neighbors_dict():
     graph = OSPFGraph(load_data=False)
 

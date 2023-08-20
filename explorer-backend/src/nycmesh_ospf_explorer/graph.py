@@ -191,28 +191,42 @@ class OSPFGraph:
         return node_set
 
     def _convert_subgraph_to_json(
-        self, subgraph: nx.MultiDiGraph, neighbor_set: Set = None
+        self,
+        subgraph: nx.MultiDiGraph,
+        neighbor_set: Set = None,
+        include_networks: bool = True,
+        whole_graph: nx.MultiDiGraph = None,
+        egress_forest: nx.DiGraph = None,
+        egress_return_paths: Dict[str, List[Tuple[str, int]]] = None,
     ) -> dict:
+        if whole_graph is None:
+            whole_graph = self._graph
+
+        if egress_return_paths is None:
+            egress_return_paths = self._egress_return_paths
+
+        if egress_forest is None:
+            egress_forest = self._egress_forest
+
         output = {"nodes": [], "edges": []}
 
         for node_id in subgraph.nodes:
             node = subgraph.nodes[node_id]
 
-            exit_path = self.get_exit_path_for_node(node_id)
-            return_path = self._egress_return_paths[node_id]
+            exit_path = self._get_exit_path_for_node(egress_forest, node_id)
+            return_path = egress_return_paths[node_id] if node_id in egress_return_paths else None
 
             output_node = {
                 "id": node_id,
                 "nn": None,
                 "nn_int": None,
-                "networks": node["networks"],
-                "exit_network_cost": exit_path[-1][1],
+                "exit_network_cost": exit_path[-1][1] if exit_path else None,
                 "exit_paths": {
-                    "outbound": exit_path[:-1],
+                    "outbound": exit_path[:-1] if exit_path else None,
                     "return": return_path,
                 },
                 "missing_edges": sum(
-                    1 for edge in self._graph.out_edges(node_id) if edge not in subgraph.edges
+                    1 for edge in whole_graph.out_edges(node_id) if edge not in subgraph.edges
                 ),
             }
 
@@ -224,6 +238,9 @@ class OSPFGraph:
 
             if neighbor_set:
                 output_node["in_neighbor_set"] = node_id in neighbor_set
+
+            if include_networks:
+                output_node["networks"] = node["networks"]
 
             output["nodes"].append(output_node)
 
