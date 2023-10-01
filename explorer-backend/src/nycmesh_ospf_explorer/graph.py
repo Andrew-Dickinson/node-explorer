@@ -1,13 +1,11 @@
 import datetime
 import os
-from typing import List, Tuple, Set, Dict, Optional
+from typing import Dict, List, Optional, Set, Tuple
 
 import networkx as nx
 import requests
-
 from dotenv import load_dotenv
-
-from nycmesh_ospf_explorer.utils import compute_nn_string_from_ip, compute_nn_from_ip
+from nycmesh_ospf_explorer.utils import compute_nn_from_ip, compute_nn_string_from_ip
 
 load_dotenv()
 
@@ -272,6 +270,10 @@ class OSPFGraph:
 
     def update_if_needed(self, age_limit=datetime.timedelta(minutes=1)):
         if self.last_updated < datetime.datetime.now() - age_limit:
+            if os.environ.get("DEBUG") == "true":
+                print("In debug mode, skipping update")
+                return
+
             self.update_link_data()
 
     def contains_router(self, router_id: str):

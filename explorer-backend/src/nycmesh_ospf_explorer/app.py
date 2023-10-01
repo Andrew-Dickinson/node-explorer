@@ -2,14 +2,19 @@ import os
 
 from flask import Flask, request
 from flask_cors import CORS
-
 from nycmesh_ospf_explorer.graph import OSPFGraph
 
 app = Flask(__name__)
 CORS(app)
 
 
-if "FLASK_ENV" in os.environ:
+if os.environ.get("DEBUG") == "true":
+    from test_graph import TEST_NINE_NODE_GRAPH, TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS
+
+    graph = OSPFGraph(load_data=False)
+    graph.update_link_data(TEST_NINE_NODE_GRAPH)
+    # graph.update_link_data(TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS)
+else:
     graph = OSPFGraph()
 
 
