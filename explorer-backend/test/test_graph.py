@@ -1,13 +1,12 @@
 import datetime
 import json
 import math
-import time
 import os
+import time
 
 import networkx
 import networkx as nx
 import pytest
-
 from nycmesh_ospf_explorer.graph import OSPFGraph
 
 
@@ -26,6 +25,7 @@ TEST_NINE_NODE_GRAPH = load_ospf_dict("nine_node_graph.json")
 TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS = load_ospf_dict(
     "nine_node_graph_with_asymmetric_costs.json"
 )
+TEST_REAL_GRAPH_SEP_2023 = load_ospf_dict("mesh_ospf_data_2023_09_29.json")
 
 
 def test_initialization():

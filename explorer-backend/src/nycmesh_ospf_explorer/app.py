@@ -9,11 +9,16 @@ CORS(app)
 
 
 if os.environ.get("DEBUG") == "true":
-    from test_graph import TEST_NINE_NODE_GRAPH, TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS
+    from test_graph import (
+        TEST_NINE_NODE_GRAPH,
+        TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS,
+        TEST_REAL_GRAPH_SEP_2023,
+    )
 
     graph = OSPFGraph(load_data=False)
     graph.update_link_data(TEST_NINE_NODE_GRAPH)
     # graph.update_link_data(TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS)
+    # graph.update_link_data(TEST_REAL_GRAPH_SEP_2023)
 else:
     graph = OSPFGraph()
 
