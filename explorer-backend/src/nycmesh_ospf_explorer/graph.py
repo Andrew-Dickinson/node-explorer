@@ -487,8 +487,8 @@ class OSPFGraph:
         return {
             **impacted_subgraph,
             "outage_lists": {
-                "removed": sorted(list(nodes)),
-                "offline": sorted(list(fully_dependent_nodes)),
+                "removed": sorted(nodes),
+                "offline": sorted(list(fully_dependent_nodes - set(nodes))),
                 "rerouted": sorted(list(partially_dependent_nodes)),
             },
         }
