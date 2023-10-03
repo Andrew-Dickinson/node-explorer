@@ -24,13 +24,55 @@ const OUTAGE_DATA_EMPTY = {
 
 function NodeUL(props) {
   const { nodeList } = props;
-  return nodeList.length > 0 ? (
+
+  const [expanded, setExpanded] = useState(false);
+
+  let nodeListToDisplay = nodeList;
+  let hiddenNodes = false;
+  if (nodeList.length > 10 && !expanded) {
+    hiddenNodes = true;
+    nodeListToDisplay = nodeListToDisplay.slice(0, 10);
+  }
+
+  return nodeListToDisplay.length > 0 ? (
     <ul className={"list-group"}>
-      {nodeList.map((node) => (
+      {nodeListToDisplay.map((node) => (
         <li className={"list-group-item"} key={node}>
           {humanLabelFromIP(node)}
         </li>
       ))}
+      {hiddenNodes ? (
+        <li className={"list-group-item"} key={"showMore"}>
+          <a
+            role={"button"}
+            href={""}
+            onClick={(event) => {
+              event.preventDefault();
+              setExpanded(true);
+            }}
+          >
+            Show {nodeList.length - nodeListToDisplay.length} more...
+          </a>
+        </li>
+      ) : (
+        <></>
+      )}
+      {expanded ? (
+        <li className={"list-group-item"} key={"showLess"}>
+          <a
+            role={"button"}
+            href={"#"}
+            onClick={(event) => {
+              event.preventDefault();
+              setExpanded(false);
+            }}
+          >
+            Show fewer...
+          </a>
+        </li>
+      ) : (
+        <></>
+      )}
     </ul>
   ) : (
     <span className={"fst-italic"}>None</span>
