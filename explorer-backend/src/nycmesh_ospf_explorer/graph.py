@@ -350,15 +350,15 @@ class OSPFGraph:
     ) -> nx.MultiDiGraph:
         modified_graph: nx.MultiDiGraph = self._graph.copy()
 
-        for node in nodes:
-            modified_graph.remove_node(node)
-
         for edge in edges:
             # Ensure we remove all edges, since there could be more than one for each direction
             for i in range(len(modified_graph[edge[0]][edge[1]])):
                 modified_graph.remove_edge(edge[0], edge[1])
             for i in range(len(modified_graph[edge[1]][edge[0]])):
                 modified_graph.remove_edge(edge[1], edge[0])
+
+        for node in nodes:
+            modified_graph.remove_node(node)
 
         return modified_graph
 
