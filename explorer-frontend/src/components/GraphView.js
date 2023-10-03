@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
-import cytoscape from "cytoscape";
-import CytoscapeComponent from "react-cytoscapejs";
-import CytoscapeStyles from "../styles/CytoscapeStyles";
-import euler from "cytoscape-euler";
 import { Alert, Col, Row } from "reactstrap";
 import GraphViewSettings from "./GraphViewSettings";
 import SelectedNodeDetail from "./SelectedNodeDetail";
 import JSONDataAccordion from "./JSONDataAccordion";
-import { convertToCytoScapeElements, getNodeDetails } from "../lib/GraphHelpers";
+import { convertOSPFToCytoScapeElements, getNodeDetails } from "../lib/GraphHelpers";
 import { usePrevious } from "../lib/utils";
 import { LastUpdatedCard } from "./LastUpdatedCard";
-
-cytoscape.use(euler);
+import { NodeGraph } from "./NodeGraph";
 
 function Disclaimer() {
   return (
@@ -65,80 +60,20 @@ function GraphView(props) {
     });
   }
 
-  const [cyRef, updateCyRef] = useState(null);
-
-  function refitGraph() {
-    if (cyRef) {
-      cyRef.layout(layoutProps).run();
-      cyRef.fit();
-    }
-  }
-
-  useEffect(() => {
-    refitGraph();
-  }, [graphData, cyRef]);
-
-  useEffect(() => {
-    if (
-      previousSettings !== undefined &&
-      previousSettings.includeEgress !== settings.includeEgress
-    ) {
-      refitGraph();
-    }
-  }, [settings]);
-
-  useEffect(() => {
-    if (cyRef) {
-      cyRef.on("select", "node", (_evt) => {
-        let nodeId = _evt.target.id().toString();
-        if (nodeId.endsWith("_missing")) {
-          updateSearchDistance(1);
-          nodeId = nodeId.replace("_missing", "");
-        }
-        onNodeSelected(nodeId);
-      });
-
-      cyRef.on("mouseover", "node", (event) => {
-        if (event.cy.container()) {
-          event.cy.container().style.cursor = "pointer";
-        }
-      });
-
-      cyRef.on("mouseout", "node", (event) => {
-        if (event.cy.container()) {
-          event.cy.container().style.cursor = "default";
-        }
-      });
-    }
-  }, [cyRef]);
-
-  const layoutProps = {
-    name: "euler",
-    randomize: true,
-    // Prevent the user grabbing nodes during the layout
-    ungrabifyWhileSimulating: true,
-    animate: "end",
-    animationDuration: 500,
-    springLength: 120,
-    gravity: -10,
-    theta: 0.2,
-  };
-
   return (
     <Row className={"gy-3"}>
       <Col className={"col-xxl-9 col-lg-8 col-xs-12"}>
         <Col className={"mb-3 d-block d-lg-none"}>
           <LastUpdatedCard updatedTime={graphData.updated} />
         </Col>
-        <CytoscapeComponent
-          className={"rounded graph-view mb-3"}
-          elements={convertToCytoScapeElements(graphData, settings, selectedNode)}
-          style={{ width: "100%", height: "35rem" }}
-          stylesheet={CytoscapeStyles}
-          layout={layoutProps}
-          cy={(cy) => {
-            updateCyRef(cy);
+        <NodeGraph
+          graphElements={convertOSPFToCytoScapeElements(graphData, settings, selectedNode)}
+          selectedNode={selectedNode}
+          onNodeSelected={(nodeId) => {
+            updateSearchDistance(1);
+            onNodeSelected(nodeId);
           }}
+          refitDependencies={[graphData, settings?.includeEgress]}
         />
         <div className={"d-none d-lg-block"}>
           <JSONDataAccordion data={graphData} />

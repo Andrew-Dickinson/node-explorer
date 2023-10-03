@@ -76,7 +76,7 @@ function isEdgeInPath(edge, path) {
   );
 }
 
-export function convertToCytoScapeElements(graphDataInput, settings, selectedNodeId) {
+export function convertOSPFToCytoScapeElements(graphDataInput, settings, selectedNodeId) {
   let graphData = structuredClone(graphDataInput);
   const outputElements = [];
   const edgeCosts = computeEdgeCosts(graphData.edges);
