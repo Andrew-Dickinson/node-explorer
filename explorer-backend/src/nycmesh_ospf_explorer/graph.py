@@ -460,7 +460,7 @@ class OSPFGraph:
         for node in nodes:
             for other_node in set(self._graph[node]):
                 if other_node in nodes_to_display:
-                    all_removed_edges.append((node, other_node))
+                    all_removed_edges.append([node, other_node])
 
         for edge in sorted(list(all_removed_edges)):
             impacted_subgraph["edges"].append({"from": edge[0], "to": edge[1], "weight": None})
