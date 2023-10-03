@@ -431,11 +431,11 @@ class OSPFGraph:
         )
 
         nodes_to_include_egress_paths_for = (
-            partially_dependent_nodes | fully_dependent_nodes | nodes_of_removed_edges
+            partially_dependent_nodes | fully_dependent_nodes | nodes_of_removed_edges | set(nodes)
         )
         nodes_to_display = nodes_to_include_egress_paths_for.copy()
 
-        # Add in egress path nodes to the nodes_to_display
+        # Add in simulated egress path nodes to the nodes_to_display
         for router_id in nodes_to_include_egress_paths_for:
             egress_outbound_path = self._get_exit_path_for_node(modified_egress_forest, router_id)
             try:
@@ -447,6 +447,17 @@ class OSPFGraph:
                 # If the node is now isolated, there might be no path
                 if egress_path_half:
                     nodes_to_display |= set(node_id for node_id, edge_cost in egress_path_half)
+
+        # Add in nominal egress path nodes to the nodes_to_display
+        for router_id in nodes_to_include_egress_paths_for:
+            egress_outbound_path = self._get_exit_path_for_node(self._egress_forest, router_id)
+            try:
+                egress_return_path = self._egress_return_paths[router_id]
+            except KeyError:
+                egress_return_path = None
+
+            for egress_path_half in [egress_outbound_path, egress_return_path]:
+                nodes_to_display |= set(node_id for node_id, edge_cost in egress_path_half)
 
         impacted_subgraph = self._convert_subgraph_to_json(
             modified_graph.subgraph(nodes_to_display),

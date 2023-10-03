@@ -318,6 +318,18 @@ export function convertOutageToCytoScapeElements(graphDataInput) {
           classes: edgeClasses,
         });
       }
+
+      const offlineNodes = graphData.outage_lists.offline;
+      if (offlineNodes.indexOf(edgeNodes[0]) !== -1 || offlineNodes.indexOf(edgeNodes[1]) !== -1) {
+        outputElements.push({
+          data: {
+            source: edgeNodes[0],
+            target: edgeNodes[1],
+            id: edgeID,
+          },
+          // classes: edgeClasses,
+        });
+      }
     }
   }
 
