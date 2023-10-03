@@ -68,6 +68,7 @@ function GraphView(props) {
         </Col>
         <NodeGraph
           graphElements={convertOSPFToCytoScapeElements(graphData, settings, selectedNode)}
+          layoutName={"euler"}
           selectedNode={selectedNode}
           onNodeSelected={(nodeId) => {
             updateSearchDistance(1);

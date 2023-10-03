@@ -3,18 +3,18 @@ import CytoscapeStyles from "../styles/CytoscapeStyles";
 import CytoscapeComponent from "react-cytoscapejs";
 import React, { useEffect, useState } from "react";
 import euler from "cytoscape-euler";
-// import dagre from "cytoscape-dagre";
+import dagre from "cytoscape-dagre";
 
 cytoscape.use(euler);
-// cytoscape.use(dagre);
+cytoscape.use(dagre);
 
 export function NodeGraph(props) {
-  const { graphElements, onNodeSelected, refitDependencies } = props;
+  const { graphElements, onNodeSelected, refitDependencies, layoutName } = props;
 
   const [cyRef, updateCyRef] = useState(null);
 
   const layoutProps = {
-    name: "euler",
+    name: layoutName, // TODO Reverse dagre and see if it gets better
     randomize: true,
     // Prevent the user grabbing nodes during the layout
     ungrabifyWhileSimulating: true,
