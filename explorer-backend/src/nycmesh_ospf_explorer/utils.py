@@ -21,6 +21,10 @@ def compute_nn_from_ip(ip: str) -> int:
 
 
 def compute_nn_string_from_ip(ip: str) -> str:
+    """
+    If you change me, please also update the corresponding humanLabelFromIP
+    function in utils.js in the front-end
+    """
     if not ip.startswith("10.69."):
         raise ValueError(f"Invalid IP for NN conversion: {ip}")
 

@@ -263,3 +263,64 @@ export function convertOSPFToCytoScapeElements(graphDataInput, settings, selecte
 
   return outputElements;
 }
+
+export function convertOutageToCytoScapeElements(graphDataInput) {
+  let graphData = structuredClone(graphDataInput);
+  const outputElements = [];
+
+  const edgeCosts = computeEdgeCosts(graphData.edges);
+
+  for (const node of graphData.nodes) {
+    const nodeClasses = ["primaryNode"];
+
+    if (graphData.outage_lists.offline.indexOf(node.id) !== -1) nodeClasses.push("offline");
+    if (graphData.outage_lists.removed.indexOf(node.id) !== -1) nodeClasses.push("removed");
+    if (graphData.outage_lists.rerouted.indexOf(node.id) !== -1) nodeClasses.push("rerouted");
+
+    if (node.exit_paths.outbound) {
+      if (node.exit_paths.outbound.length === 1) {
+        nodeClasses.push("exit");
+      } else {
+        const egressEdge = { from: node.id, to: node.exit_paths.outbound[1][0] };
+        const edgeClasses = ["directionalEdge"];
+        // if (edgeCosts[computeNodePairId(egressEdge)][node.id] === null)
+        //   edgeClasses.push("dashedEdge");
+
+        outputElements.push({
+          data: {
+            source: egressEdge.from,
+            target: egressEdge.to,
+            id: egressEdge.from + "->" + egressEdge.to,
+            label: "",
+          },
+          classes: edgeClasses,
+        });
+      }
+    }
+
+    outputElements.push({
+      data: { id: node.id, label: node.nn ?? node.id },
+      classes: nodeClasses,
+    });
+
+    for (const edgeID of Object.keys(edgeCosts)) {
+      const edgeNodes = Object.keys(edgeCosts[edgeID].individualCosts);
+      if (edgeCosts[edgeID].lowestCost === null) {
+        const edgeClasses = ["dashedEdge", "boldRedText"];
+
+        outputElements.push({
+          data: {
+            source: edgeNodes[0],
+            target: edgeNodes[1],
+            label: "X",
+            id: edgeID,
+          },
+          classes: edgeClasses,
+        });
+      }
+    }
+  }
+
+  // return [];
+  return outputElements;
+}

@@ -8,6 +8,7 @@ import Explorer from "./pages/Explorer";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
+import { OutageSimulator } from "./pages/OutageSimulator";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/explorer" />} />
           <Route path="/explorer" element={<Explorer />} />
+          <Route path="/outage-analyzer" element={<OutageSimulator />} />
           <Route path="*" element={<NoPage />} />
         </Route>
       </Routes>

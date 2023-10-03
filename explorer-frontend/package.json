@@ -13,6 +13,7 @@
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-euler": "^1.2.2",
     "cytoscape-spread": "^3.0.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-bootstrap-range-slider": "^3.0.8",

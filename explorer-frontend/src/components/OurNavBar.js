@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
-  NavItem,
-  NavLink,
-} from "reactstrap";
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink } from "reactstrap";
 import { BsGithub } from "react-icons/bs";
 import { COMMIT_HASH } from "../constants";
 
@@ -18,13 +10,7 @@ function OurNavBar() {
 
   return (
     <div>
-      <Navbar
-        color={"dark"}
-        light={false}
-        dark={true}
-        expand={"sm"}
-        container={"sm"}
-      >
+      <Navbar color={"dark"} light={false} dark={true} expand={"sm"} container={"sm"}>
         <NavbarBrand href="/">
           <img
             alt="logo"
@@ -39,11 +25,14 @@ function OurNavBar() {
         </NavbarBrand>
         <NavbarToggler onClick={toggle} />
         <Collapse isOpen={isOpen} navbar>
-          {/*<Nav className="me-auto" navbar>*/}
-          {/*  <NavItem>*/}
-          {/*    <NavLink href="/explorer/">OSPF Explorer</NavLink>*/}
-          {/*  </NavItem>*/}
-          {/*</Nav>*/}
+          <Nav className="me-auto" navbar>
+            <NavItem>
+              <NavLink href="/explorer">OSPF Explorer</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink href="/outage-analyzer">Outage Simulator (beta)</NavLink>
+            </NavItem>
+          </Nav>
           <Nav className={"ms-auto"} navbar>
             <NavItem className={"ms-auto"}>
               <NavLink href="https://github.com/Andrew-Dickinson/node-explorer">
@@ -52,10 +41,7 @@ function OurNavBar() {
             </NavItem>
             <NavItem>
               <NavLink
-                href={
-                  "https://github.com/Andrew-Dickinson/node-explorer/commit/" +
-                  COMMIT_HASH
-                }
+                href={"https://github.com/Andrew-Dickinson/node-explorer/commit/" + COMMIT_HASH}
                 className={"fst-italic"}
               >
                 {COMMIT_HASH.substring(0, 7)}

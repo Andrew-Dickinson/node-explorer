@@ -1,10 +1,11 @@
-const black = "#000";
-const red = "#c02b12";
-const yellow = "#f1c102";
-const blue = "#036ad9";
-const lightBlue = "#7BB8FF";
-const lightGrey = "#ccc";
-const darkGrey = "#9f9f9f";
+export const black = "#000";
+export const red = "#c02b12";
+export const darkRed = "#9d0000";
+export const yellow = "#f1c102";
+export const blue = "#036ad9";
+export const lightBlue = "#7BB8FF";
+export const lightGrey = "#ccc";
+export const darkGrey = "#9f9f9f";
 
 export default [
   {
@@ -35,6 +36,14 @@ export default [
     },
   },
   {
+    selector: ".boldRedText",
+    style: {
+      color: darkRed,
+      "font-weight": "bold",
+      "font-size": "20px",
+    },
+  },
+  {
     selector: ".exit",
     style: {
       "background-color": black,
@@ -47,9 +56,21 @@ export default [
     },
   },
   {
-    selector: ".outage",
+    selector: ".offline",
     style: {
-      "background-color": red,
+      "background-color": darkRed,
+    },
+  },
+  {
+    selector: ".removed",
+    style: {
+      "background-color": darkRed,
+    },
+  },
+  {
+    selector: ".rerouted",
+    style: {
+      "background-color": yellow,
     },
   },
   {
