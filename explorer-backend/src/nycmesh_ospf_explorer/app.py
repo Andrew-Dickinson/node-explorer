@@ -7,8 +7,9 @@ from nycmesh_ospf_explorer.graph import OSPFGraph
 app = Flask(__name__)
 CORS(app)
 
-
-if os.environ.get("DEBUG") == "true":
+if "FLASK_ENV" in os.environ:
+    graph = OSPFGraph()
+elif os.environ.get("DEBUG") == "true":
     from test_graph import (
         TEST_NINE_NODE_GRAPH,
         TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS,
@@ -19,8 +20,6 @@ if os.environ.get("DEBUG") == "true":
     graph.update_link_data(TEST_NINE_NODE_GRAPH)
     # graph.update_link_data(TEST_NINE_NODE_GRAPH_WITH_ASYMMETRIC_COSTS)
     # graph.update_link_data(TEST_REAL_GRAPH_SEP_2023)
-else:
-    graph = OSPFGraph()
 
 
 def validate_nn(nn: str):
