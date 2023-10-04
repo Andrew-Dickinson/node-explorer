@@ -725,6 +725,14 @@ def test_simulated_node_outage_on_lone_branch():
     assert graph.simulate_outage(["10.69.0.2"], []) == {
         "nodes": [
             {
+                "exit_network_cost": 1,
+                "exit_paths": {"outbound": [("10.69.0.1", None)], "return": [("10.69.0.1", None)]},
+                "id": "10.69.0.1",
+                "missing_edges": 0,
+                "nn": "1",
+                "nn_int": 1,
+            },
+            {
                 "id": "10.69.0.3",
                 "nn": "3",
                 "nn_int": 3,
@@ -745,6 +753,8 @@ def test_simulated_node_outage_on_lone_branch():
             },
         ],
         "edges": [
+            {"from": "10.69.0.2", "to": "10.69.0.1", "weight": None},
+            {"from": "10.69.0.1", "to": "10.69.0.2", "weight": None},
             {"from": "10.69.0.2", "to": "10.69.0.3", "weight": None},
             {"from": "10.69.0.3", "to": "10.69.0.2", "weight": None},
         ],
