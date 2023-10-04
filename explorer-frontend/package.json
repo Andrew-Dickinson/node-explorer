@@ -12,6 +12,7 @@
     "cytoscape": "^3.24.0",
     "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-euler": "^1.2.2",
+    "cytoscape-dagre": "^1.2.2",
     "cytoscape-spread": "^3.0.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
