@@ -181,7 +181,7 @@ export function OutageSimulator(props) {
           </h3>
           <NodeGraph
             graphElements={convertOutageToCytoScapeElements(outageData)}
-            layoutName={"dagre"}
+            layoutName={"euler"}
             onNodeSelected={(_) => {}}
             refitDependencies={[outageData]}
           />
