@@ -24,7 +24,7 @@ import { usePrevious } from "../lib/utils";
 JSONDataAccordion.propTypes = { data: PropTypes.shape({}) };
 
 function Explorer() {
-  const [urlState, setUrlState] = useUrlState({ router: "10.69.41.53" });
+  const [urlState, setUrlState] = useUrlState({ router: "10.69.51.51" });
   const [searchDistance, setSearchDistance] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
