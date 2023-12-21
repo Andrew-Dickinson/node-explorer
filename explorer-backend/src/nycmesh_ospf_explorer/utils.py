@@ -11,7 +11,7 @@ def compute_nn_from_ip(ip: str) -> int:
     third_octet = int(components[2])
     fourth_octet = int(components[3])
 
-    while fourth_octet > 100:
+    while fourth_octet >= 100:
         fourth_octet -= 100
 
     if third_octet > 100:

@@ -1,8 +1,7 @@
 import pytest
-
 from nycmesh_ospf_explorer.utils import (
-    compute_nn_from_ip,
     compute_ip_from_nn,
+    compute_nn_from_ip,
     compute_nn_string_from_ip,
 )
 
@@ -26,6 +25,7 @@ def test_convert_ip_to_nn():
     assert compute_nn_from_ip("10.69.5.31") == 531
     assert compute_nn_from_ip("10.69.14.55") == 1455
     assert compute_nn_from_ip("10.69.23.97") == 2397
+    assert compute_nn_from_ip("10.69.78.0") == 7800
 
     # Second Router
     assert compute_nn_from_ip("10.69.0.102") == 2
@@ -35,6 +35,7 @@ def test_convert_ip_to_nn():
     assert compute_nn_from_ip("10.69.5.131") == 531
     assert compute_nn_from_ip("10.69.14.155") == 1455
     assert compute_nn_from_ip("10.69.23.197") == 2397
+    assert compute_nn_from_ip("10.69.78.100") == 7800
 
     # Third Router  (where applicable)
     assert compute_nn_from_ip("10.69.0.202") == 2
@@ -42,6 +43,7 @@ def test_convert_ip_to_nn():
     assert compute_nn_from_ip("10.69.0.214") == 14
     assert compute_nn_from_ip("10.69.1.245") == 145
     assert compute_nn_from_ip("10.69.5.231") == 531
+    assert compute_nn_from_ip("10.69.78.200") == 7800
 
 
 def test_convert_ip_to_nn_string():
@@ -53,6 +55,7 @@ def test_convert_ip_to_nn_string():
     assert compute_nn_string_from_ip("10.69.5.31") == "531"
     assert compute_nn_string_from_ip("10.69.14.55") == "1455"
     assert compute_nn_string_from_ip("10.69.23.97") == "2397"
+    assert compute_nn_string_from_ip("10.69.78.0") == "7800"
 
     # Second Router
     assert compute_nn_string_from_ip("10.69.0.102") == "2 (.1xx)"
