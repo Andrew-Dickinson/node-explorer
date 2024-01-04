@@ -4,12 +4,14 @@ from typing import Dict, List, Optional, Set, Tuple
 
 import networkx as nx
 import requests
+import urlpath
 from dotenv import load_dotenv
 from nycmesh_ospf_explorer.utils import compute_nn_from_ip, compute_nn_string_from_ip
 
 load_dotenv()
 
 API_URL = os.environ.get("API_URL", "http://api.andrew.mesh/api/v1/ospf/linkdb")
+HISTORY_API_BASE_URL = (urlpath.URL(API_URL) / "../history").resolve()
 
 
 class OSPFGraph:
@@ -275,6 +277,19 @@ class OSPFGraph:
                 return
 
             self.update_link_data()
+
+    def update_from_timestamp(self, timestamp: datetime.datetime):
+        query_url = HISTORY_API_BASE_URL / (
+            timestamp.astimezone(datetime.timezone.utc).strftime("%Y/%m/%d/%H/%M") + ".json"
+        )
+        try:
+            json_link_data = requests.get(query_url).json()
+        except requests.exceptions.RequestException:
+            raise RuntimeError(
+                f"Error loading graph data from {query_url}\nDo you have connectivity to that endpoint?"
+            )
+
+        self.update_link_data(json_link_data)
 
     def contains_router(self, router_id: str):
         return router_id in self._graph

@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from flask import Flask, request
@@ -39,7 +40,13 @@ def get_neighbors(router_id):
     neighbor_depth = int(request.args.get("searchDistance", 1))
     include_egress = request.args.get("includeEgress", "false") == "true"
 
-    graph.update_if_needed()
+    if request.args.get("timestamp"):
+        graph.update_from_timestamp(
+            datetime.datetime.fromtimestamp(int(request.args.get("timestamp")))
+        )
+    else:
+        graph.update_if_needed()
+
     if not graph.contains_router(router_id):
         return str(f"Couldn't find router with ID: {router_id}"), 404
 
@@ -51,7 +58,12 @@ def get_neighbors(router_id):
 
 @app.route("/simulate-outage", methods=["GET"])
 def simulate_outage():
-    graph.update_if_needed()
+    if request.args.get("timestamp"):
+        graph.update_from_timestamp(
+            datetime.datetime.fromtimestamp(int(request.args.get("timestamp")))
+        )
+    else:
+        graph.update_if_needed()
 
     nodes_param = request.args.get("nodes", "")
     edges_param = request.args.get("edges", "")
@@ -86,7 +98,13 @@ def simulate_outage():
 
 @app.route("/edges/<router1_id>/<router2_id>", methods=["GET"])
 def get_edges(router1_id, router2_id):
-    graph.update_if_needed()
+    if request.args.get("timestamp"):
+        graph.update_from_timestamp(
+            datetime.datetime.fromtimestamp(int(request.args.get("timestamp")))
+        )
+    else:
+        graph.update_if_needed()
+
     for router_id in [router1_id, router2_id]:
         if not graph.contains_router(router_id):
             return str(f"Couldn't find router with ID: {router_id}"), 404

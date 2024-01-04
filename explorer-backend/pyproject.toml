@@ -15,7 +15,8 @@ dependencies = [
     "python-dotenv",
     "networkx",
     "requests",
-    "flask-cors"
+    "flask-cors",
+    "urlpath",
 ]
 
 [project.urls]
