@@ -63,8 +63,12 @@ function GraphView(props) {
   return (
     <Row className={"gy-3"}>
       <Col className={"col-xxl-9 col-lg-8 col-xs-12"}>
-        <Col className={"mb-3 d-block d-lg-none"}>
-          <LastUpdatedCard updatedTime={graphData.updated} />
+        <Col className={"mb-3 d-block d-sm-none"}>
+          <LastUpdatedCard
+            updatedTime={graphData.updated}
+            urlState={props.urlState}
+            setUrlState={props.setUrlState}
+          />
         </Col>
         <NodeGraph
           graphElements={convertOSPFToCytoScapeElements(graphData, settings, selectedNode)}

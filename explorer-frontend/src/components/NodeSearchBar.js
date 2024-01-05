@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardText,
-  Col,
-  Form,
-  Input,
-  InputGroup,
-  InputGroupText,
-  Row,
-  Spinner,
-} from "reactstrap";
-import { BsClockFill, BsRouterFill } from "react-icons/bs";
-import moment from "moment";
+import { Button, Col, Input, InputGroup, InputGroupText, Row, Spinner } from "reactstrap";
 import { FaArrowAltCircleRight } from "react-icons/fa";
-import { LastUpdatedCard } from "./LastUpdatedCard";
 
 function NodeSearchBar(props) {
   const { routerId, updateRouterId, loading, updatedTime } = props;
@@ -80,9 +65,6 @@ function NodeSearchBar(props) {
             )}
           </Button>
         </InputGroup>
-      </Col>
-      <Col className={"d-none d-lg-block"}>
-        <LastUpdatedCard updatedTime={updatedTime} />
       </Col>
     </Row>
   );

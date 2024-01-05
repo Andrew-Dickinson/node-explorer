@@ -2,21 +2,21 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import { Container } from "reactstrap";
 import OurNavBar from "./OurNavBar";
+import useUrlState from "@ahooksjs/use-url-state";
 
-function Layout() {
+function Layout(props) {
+  const [urlState, setUrlState] = useUrlState({});
+
   return (
     <>
-      {/*<Container fluid className={"p-0"}>*/}
-      <OurNavBar />
+      <OurNavBar
+        urlState={urlState}
+        setUrlState={setUrlState}
+        dataLastUpdated={props.dataLastUpdated}
+      />
       <Container className={"pt-3 gy-3"}>
         <Outlet />
       </Container>
-      {/*</Container>*/}
-      {/*<Navbar>*/}
-      {/*  <NavbarBrand href="/">*/}
-      {/*    Home*/}
-      {/*  </NavbarBrand>*/}
-      {/*</Navbar>*/}
     </>
   );
 }

@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Button, Col, Input, Label, Row, Spinner, Tooltip } from "reactstrap";
 import { BsFillXCircleFill } from "react-icons/bs";
 import axios from "axios";
-import { EDGES_DATA_URL, NEIGHBORS_DATA_URL } from "../constants";
+import { EDGES_DATA_URL } from "../constants";
 import { FaPlusCircle } from "react-icons/fa";
 import _ from "lodash";
 import SimpleTooltip from "./SimpleTooltip";
 import { humanLabelFromIP, ipFromMaybeNN } from "../lib/utils";
 
-async function doesEdgeExist(router1_id, router2_id) {
+async function doesEdgeExist(router1_id, router2_id, timestamp) {
   try {
-    const res = await axios.get(EDGES_DATA_URL + `${router1_id}/${router2_id}`);
+    const res = await axios.get(EDGES_DATA_URL + `${router1_id}/${router2_id}`, {
+      params: timestamp ? { timestamp } : undefined,
+    });
     return res.data && res.data.edges && res.data.edges.length !== 0;
   } catch (err) {
     return false;
@@ -170,12 +172,14 @@ export function EdgeSelector(props) {
             onChange={(e) => {
               setTextBox1Content(e.target.value);
 
-              doesEdgeExist(ipFromMaybeNN(e.target.value), ipFromMaybeNN(textBox2Content)).then(
-                (edgeExists) => {
-                  setLoading(false);
-                  setPendingEdgeExists(edgeExists);
-                }
-              );
+              doesEdgeExist(
+                ipFromMaybeNN(e.target.value),
+                ipFromMaybeNN(textBox2Content),
+                props.urlState.timestamp
+              ).then((edgeExists) => {
+                setLoading(false);
+                setPendingEdgeExists(edgeExists);
+              });
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !loading && isInputTextBoxValid()) {
@@ -260,6 +264,7 @@ export function NodeAndEdgeSelector(props) {
         <EdgeSelector
           selectedEdges={props.selectedEdges}
           onSelectionUpdate={props.onEdgeSelectionUpdate}
+          urlState={props.urlState}
         />
       </Col>
     </>

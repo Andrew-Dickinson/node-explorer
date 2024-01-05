@@ -23,7 +23,7 @@ import { usePrevious } from "../lib/utils";
 
 JSONDataAccordion.propTypes = { data: PropTypes.shape({}) };
 
-function Explorer() {
+function Explorer(props) {
   const [urlState, setUrlState] = useUrlState({ router: "10.69.51.51" });
   const [searchDistance, setSearchDistance] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -36,23 +36,35 @@ function Explorer() {
   function loadGraphData() {
     setError(null);
     setLoading(true);
+    const prevLastUpdate = graphData.updated;
     axios
       .get(NEIGHBORS_DATA_URL + urlState.router, {
-        params: { searchDistance: searchDistance, includeEgress: true },
+        params: {
+          searchDistance: searchDistance,
+          includeEgress: true,
+          timestamp: urlState.timestamp,
+        },
       })
       .then((res) => {
         updateanalysisData(res.data);
         setLoading(false);
+        props.setDataLastUpdated(res.data.updated);
       })
       .catch((err) => {
         setLoading(false);
         setError("Err");
+        props.setDataLastUpdated(prevLastUpdate);
       });
   }
 
-  useEffect(loadGraphData, []);
   useEffect(() => {
-    if (prevUrlState?.router !== undefined && prevUrlState?.router !== urlState.router) {
+    loadGraphData();
+  }, []);
+  useEffect(() => {
+    if (
+      (prevUrlState?.router !== undefined && prevUrlState?.router !== urlState.router) ||
+      (prevUrlState !== undefined && prevUrlState?.timestamp !== urlState.timestamp)
+    ) {
       loadGraphData();
     }
   }, [urlState]);
@@ -84,7 +96,7 @@ function Explorer() {
             return { ...oldState, router: newRouterId };
           });
         }}
-        updatedTime={graphData.updated}
+        updatedTime={props.dataLastUpdated}
       />
 
       <GraphView
@@ -93,6 +105,8 @@ function Explorer() {
         updateSearchDistance={setSearchDistance}
         selectedNode={urlState.router}
         displayWarning={false}
+        urlState={urlState}
+        setUrlState={setUrlState}
         onNodeSelected={(newRouterId) => {
           setUrlState((oldState) => {
             return { ...oldState, router: newRouterId };

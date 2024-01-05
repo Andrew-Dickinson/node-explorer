@@ -10,7 +10,7 @@ import { NodeGraph } from "../components/NodeGraph";
 import { convertOutageToCytoScapeElements } from "../lib/GraphHelpers";
 import { BsFillCircleFill, BsX, BsXCircle, BsXLg } from "react-icons/bs";
 import { black, darkGrey, darkRed, red, yellow } from "../styles/CytoscapeStyles";
-import { humanLabelFromIP } from "../lib/utils";
+import { humanLabelFromIP, usePrevious } from "../lib/utils";
 
 const OUTAGE_DATA_EMPTY = {
   nodes: [],
@@ -80,6 +80,9 @@ function NodeUL(props) {
 }
 
 export function OutageSimulator(props) {
+  const [urlState, setUrlState] = useUrlState({});
+  const prevUrlState = usePrevious(urlState);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -91,20 +94,24 @@ export function OutageSimulator(props) {
   function simulateOutage() {
     setError(null);
     setLoading(true);
+    const prevLastUpdate = outageData.updated;
     axios
       .get(SIMULATE_OUTAGE_URL, {
         params: {
           nodes: selectedNodes.join(","),
           edges: selectedEdges.map(({ from, to }) => `${from}->${to}`).join(","),
+          timestamp: urlState.timestamp,
         },
       })
       .then((res) => {
         setOutageData(res.data);
         setLoading(false);
+        props.setDataLastUpdated(res.data.updated);
       })
       .catch((err) => {
         setLoading(false);
         setError(err?.response?.data ?? err?.message ?? "Err");
+        props.setDataLastUpdated(prevLastUpdate);
       });
   }
 
@@ -116,6 +123,20 @@ export function OutageSimulator(props) {
     }
   }, [selectedEdges, selectedNodes]);
 
+  useEffect(() => {
+    if (
+      prevUrlState !== undefined &&
+      prevUrlState?.timestamp !== urlState.timestamp &&
+      (selectedNodes.length > 0 || selectedEdges.length > 0)
+    ) {
+      simulateOutage();
+    }
+  }, [urlState]);
+
+  useEffect(() => {
+    setUrlState({});
+  }, [setUrlState]);
+
   return (
     <>
       <h2 className={"mb-3"}>Outage Simulator (beta)</h2>
@@ -125,6 +146,7 @@ export function OutageSimulator(props) {
           onNodeSelectionUpdate={setSelectedNodes}
           selectedEdges={selectedEdges}
           onEdgeSelectionUpdate={setSelectedEdges}
+          urlState={urlState}
         />
       </Row>
       {error ? (
