@@ -91,6 +91,31 @@ export function OutageSimulator(props) {
 
   const [outageData, setOutageData] = useState(OUTAGE_DATA_EMPTY);
 
+  function copyInstallImpactQueryToClipboard() {
+    event.preventDefault();
+    console.log(outageData.outage_lists.rerouted);
+    console.log(outageData.outage_lists.offline);
+    const reroutedOrOffline = outageData.outage_lists.offline
+      .concat(outageData.outage_lists.rerouted)
+      .map((element) => humanLabelFromIP(element).split(" ")[0])
+      .join(",");
+
+    const impactQuery = `SELECT DISTINCT * FROM meshapi_install
+  JOIN meshapi_node ON meshapi_node.id = meshapi_install.node_id
+  WHERE network_number IN (${reroutedOrOffline});`;
+
+    // Copy the text inside the text field to the clipboard
+    navigator.clipboard
+      .writeText(impactQuery)
+      .then(() => {
+        // Display a message to the user
+        //document.getElementById('message').innerText = 'Text copied to clipboard!';
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
+  }
+
   function simulateOutage() {
     setError(null);
     setLoading(true);
@@ -186,6 +211,17 @@ export function OutageSimulator(props) {
           ) : (
             <NodeUL nodeList={outageData.outage_lists.rerouted} />
           )}
+          <Row>
+            <Button
+              onClick={copyInstallImpactQueryToClipboard(outageData.outage_lists)}
+              disabled={
+                outageData.outage_lists.offline.length === 0 &&
+                outageData.outage_lists.rerouted.length === 0
+              }
+            >
+              📋 Copy Install Impact Query
+            </Button>
+          </Row>
         </Col>
       </Row>
       <Row>
