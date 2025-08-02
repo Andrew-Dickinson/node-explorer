@@ -198,7 +198,7 @@ export function OutageSimulator(props) {
 
   return (
     <>
-      <h2 className={"mb-3"}>Outage Simulator (beta)</h2>
+      <h2 className={"mb-3"}>Outage Simulator</h2>
       <Row>
         <NodeAndEdgeSelector
           selectedNodes={selectedNodes}
@@ -309,20 +309,6 @@ export function OutageSimulator(props) {
               shifts)
             </li>
           </ul>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Alert color={"info"} className={"mt-3"}>
-            <h4>Beta: Outage simulation may be imperfect</h4>
-            <p>
-              The simulation that this tool does to compute re-routes and impact is tricky to get
-              right and we&apos;re not sure if it&apos;s 100% correct yet. Especialy in the case of
-              asymmetric routing the display above may not be accurate/useful. Report any
-              inconsistencies you notice to <b>@Andrew&nbsp;Dickinson</b> on slack so we can fix
-              them!
-            </p>
-          </Alert>
         </Col>
       </Row>
       <JSONDataAccordion data={outageData ?? {}} />

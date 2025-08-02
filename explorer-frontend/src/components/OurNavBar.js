@@ -55,7 +55,7 @@ function OurNavBar(props) {
             </NavItem>
             <NavItem>
               <NavLink href={`/outage-analyzer?timestamp=${urlState.timestamp ?? ""}`}>
-                Outage Simulator (beta)
+                Outage Simulator
               </NavLink>
             </NavItem>
           </Nav>
