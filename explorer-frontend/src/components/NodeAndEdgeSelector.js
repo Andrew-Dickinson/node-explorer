@@ -175,7 +175,7 @@ export function EdgeSelector(props) {
               doesEdgeExist(
                 ipFromMaybeNN(e.target.value),
                 ipFromMaybeNN(textBox2Content),
-                props.urlState.timestamp
+                props.timestamp
               ).then((edgeExists) => {
                 setLoading(false);
                 setPendingEdgeExists(edgeExists);
@@ -264,7 +264,7 @@ export function NodeAndEdgeSelector(props) {
         <EdgeSelector
           selectedEdges={props.selectedEdges}
           onSelectionUpdate={props.onEdgeSelectionUpdate}
-          urlState={props.urlState}
+          timestamp={props.timestamp}
         />
       </Col>
     </>

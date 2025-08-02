@@ -205,7 +205,7 @@ export function OutageSimulator(props) {
           onNodeSelectionUpdate={setSelectedNodes}
           selectedEdges={selectedEdges}
           onEdgeSelectionUpdate={setSelectedEdges}
-          urlState={urlState}
+          timestamp={urlState.timestamp}
         />
       </Row>
       {error ? (
