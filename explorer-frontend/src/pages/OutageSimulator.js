@@ -79,6 +79,25 @@ function NodeUL(props) {
   );
 }
 
+function serializeNodeList(nodes) {
+  return nodes.join(",");
+}
+
+function deserializeNodeList(nodesString) {
+  return nodesString.split(",");
+}
+
+function serializeEdgeList(edges) {
+  return edges.map(({ from, to }) => `${from}->${to}`).join(",");
+}
+
+function deserializeEdgeList(edgesString) {
+  return edgesString.split(",").map((edgeString) => {
+    const parts = edgeString.split("->");
+    return {from: parts[0], to: parts[1]};
+  })
+}
+
 export function OutageSimulator(props) {
   const [urlState, setUrlState] = useUrlState({});
   const prevUrlState = usePrevious(urlState);
@@ -123,8 +142,8 @@ export function OutageSimulator(props) {
     axios
       .get(SIMULATE_OUTAGE_URL, {
         params: {
-          nodes: selectedNodes.join(","),
-          edges: selectedEdges.map(({ from, to }) => `${from}->${to}`).join(","),
+          nodes: serializeNodeList(selectedNodes),
+          edges: serializeEdgeList(selectedEdges),
           timestamp: urlState.timestamp,
         },
       })
@@ -146,6 +165,13 @@ export function OutageSimulator(props) {
     } else {
       setOutageData(OUTAGE_DATA_EMPTY);
     }
+    setUrlState((prevUrlState) => {
+      return {
+        ...prevUrlState,
+        selectedEdges: serializeEdgeList(selectedEdges),
+        selectedNodes: serializeNodeList(selectedNodes)
+      };
+    })
   }, [selectedEdges, selectedNodes]);
 
   useEffect(() => {
@@ -155,8 +181,16 @@ export function OutageSimulator(props) {
       (selectedNodes.length > 0 || selectedEdges.length > 0)
     ) {
       simulateOutage();
+    } else if (prevUrlState === undefined) {
+      if (urlState.selectedEdges !== undefined) {
+        setSelectedEdges(deserializeEdgeList(urlState.selectedEdges))
+      }
+      if (urlState.selectedNodes !== undefined) {
+        setSelectedNodes(deserializeNodeList(urlState.selectedNodes))
+      }
     }
-  }, [urlState]);
+
+  }, [urlState, setSelectedNodes, setSelectedEdges, deserializeNodeList, deserializeEdgeList]);
 
   useEffect(() => {
     setUrlState({});
