@@ -31,7 +31,7 @@ function computeEdgeCosts(edges) {
   for (const edgePair of Object.keys(edgeCosts)) {
     const costsForThisPair = edgeCosts[edgePair].individualCosts;
     for (const nodeId of Object.keys(costsForThisPair)) {
-      costsForThisPair[nodeId].sort();
+      costsForThisPair[nodeId].sort().reverse();
     }
   }
 
