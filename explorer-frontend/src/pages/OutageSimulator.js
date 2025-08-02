@@ -84,6 +84,7 @@ function serializeNodeList(nodes) {
 }
 
 function deserializeNodeList(nodesString) {
+  if (nodesString === "") return [];
   return nodesString.split(",");
 }
 
@@ -92,6 +93,7 @@ function serializeEdgeList(edges) {
 }
 
 function deserializeEdgeList(edgesString) {
+  if (edgesString === "") return [];
   return edgesString.split(",").map((edgeString) => {
     const parts = edgeString.split("->");
     return {from: parts[0], to: parts[1]};
