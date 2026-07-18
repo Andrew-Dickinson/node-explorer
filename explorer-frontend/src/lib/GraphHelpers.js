@@ -31,13 +31,13 @@ function computeEdgeCosts(edges) {
   for (const edgePair of Object.keys(edgeCosts)) {
     const costsForThisPair = edgeCosts[edgePair].individualCosts;
     for (const nodeId of Object.keys(costsForThisPair)) {
-      costsForThisPair[nodeId].sort().reverse();
+      costsForThisPair[nodeId].sort((a, b) => a - b);
     }
   }
 
   // Compute the lowest cost edge for each pair of nodes
   for (const edgePair of Object.keys(edgeCosts)) {
-    edgeCosts[edgePair].lowestCost = 100000000;
+    edgeCosts[edgePair].lowestCost = Infinity;
     const costsForThisPair = edgeCosts[edgePair].individualCosts;
     for (const nodeId of Object.keys(costsForThisPair)) {
       if (costsForThisPair[nodeId][0] < edgeCosts[edgePair].lowestCost)
